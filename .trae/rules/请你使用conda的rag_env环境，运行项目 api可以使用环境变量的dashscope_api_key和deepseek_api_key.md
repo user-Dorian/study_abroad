@@ -1,0 +1,9 @@
+请你使用conda的rag_env环境，运行项目
+conda文件地址：D:\miniconda3\Scripts\conda.exe
+api：可以使用环境变量的DASHSCOPE_API_KEY和DEEPSEEK_API_KEY
+redis：密码是1234，端口是6379
+构建项目使用健全的日志机制，分别设置写入控制台和文件的日志级别
+独立的配置文件config，使用面向对象进行管理
+在项目构建的过程中，如果发现有的配置并不具备，要及时补充进去，不要硬编码
+redis、milvus和sql需要我手动启动docker和数据库服务器，如果你发现没开，不要自行解决，直接报给我手动开启
+sql 使用 postgres 数据库 数据库端口是 5432

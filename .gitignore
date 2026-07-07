@@ -1,0 +1,35 @@
+# ====== 环境变量（含敏感信息）======
+.env
+
+# ====== Python 缓存 ======
+__pycache__/
+*.py[cod]
+.Python
+*.so
+.pytest_cache/
+
+# ====== 模型文件（体积巨大，需自行下载）======
+models/**
+!models/.gitkeep
+
+# ====== BM25索引（可通过 scripts 下脚本重建）======
+bm25_index/**
+!bm25_index/.gitkeep
+
+# ====== 日志 ======
+logs/
+*.log
+
+# ====== IDE / 系统文件 ======
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ====== 测试输出 ======
+test_sse.txt
+test_sse_output.txt
+server_test.log
