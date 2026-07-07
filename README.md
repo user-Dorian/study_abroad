@@ -22,6 +22,20 @@
 
 模型文件较大（总计约 3GB），已配置在 `.gitignore` 中不会上传至仓库，请在各环境单独下载。
 
+## Git 忽略说明
+
+以下内容已在 `.gitignore` 中配置，不会上传至仓库，但本地保留：
+
+| 类型 | 说明 |
+|------|------|
+| `models/` | 模型文件（~3GB），仅 `.gitkeep` 占位 |
+| `logs/` | 运行时日志 |
+| `bm25_index/` | BM25 索引（可通过脚本重建），仅 `.gitkeep` 占位 |
+| `.env` | 敏感配置（API Key、数据库密码等） |
+| `test_*.py` | 测试脚本（本地保留，不上传） |
+| `__pycache__/` | Python 缓存 |
+| `*.log` | 日志文件 |
+
 ## 环境配置
 
 1. 复制环境变量模板：
@@ -86,11 +100,16 @@ python server.py
 │   └── retrieval/    # 检索与重排序
 ├── retrieval/        # BM25 检索模块
 ├── utils/            # 工具模块（日志、Docker 环境管理）
-├── scripts/          # 工具脚本（模型下载、建表、检查）
+├── scripts/          # 工具脚本（模型下载、建表）
 ├── data/             # 留学知识库原始数据
 ├── static/           # 前端静态页面
 ├── server.py         # Web 服务入口
-└── main.py           # CLI 交互入口
+├── main.py           # CLI 交互入口
+├── check_config.py   # 配置检查
+├── check_milvus_db.py# Milvus 数据库检查
+├── .env.example      # 环境变量模板
+├── .gitignore        # Git 忽略规则
+└── requirements.txt  # Python 依赖清单
 ```
 
 ## 相关脚本

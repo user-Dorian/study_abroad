@@ -29,6 +29,10 @@ logs/
 .DS_Store
 Thumbs.db
 
+# ====== 测试脚本 ======
+test_*.py
+scripts/test_*.py
+
 # ====== 测试输出 ======
 test_sse.txt
 test_sse_output.txt
