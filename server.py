@@ -40,6 +40,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import uvicorn
 from api.routes import router as query_router, init_query_handler
+from api.auth_routes import router as auth_router
+from api.status_routes import router as status_router
+from api.user_routes import router as user_router
 from utils.logger import logger
 
 conversation_router = None
@@ -54,6 +57,9 @@ except ImportError as e:
 app = FastAPI(title="RAG智能检索系统", version="1.0.0")
 
 app.include_router(query_router, prefix="")
+app.include_router(auth_router, prefix="")
+app.include_router(status_router, prefix="")
+app.include_router(user_router, prefix="")
 if conversation_router:
     app.include_router(conversation_router, prefix="")
 
@@ -100,14 +106,60 @@ def _init_redis():
 
 
 def _init_database():
-    """验证数据库连接，返回 (db_available_bool, status_text, status)"""
+    """验证数据库连接并创建必要的表，返回 (db_available_bool, status_text, status)"""
     try:
         import psycopg2
         from config.database import DatabaseConfig
         if DatabaseConfig.validate():
             conn = psycopg2.connect(**DatabaseConfig.get_connection_params())
+            # 创建用户资料表
+            with conn.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS user_profiles (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        nickname VARCHAR(50),
+                        occupation VARCHAR(100),
+                        industry VARCHAR(50),
+                        experience_years VARCHAR(20),
+                        skills TEXT[],
+                        bio TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(user_id)
+                    );
+                    CREATE TABLE IF NOT EXISTS user_documents (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        filename VARCHAR(255) NOT NULL,
+                        file_type VARCHAR(20),
+                        file_size INTEGER,
+                        file_content BYTEA,
+                        parsed_text TEXT,
+                        parse_status VARCHAR(20) DEFAULT 'completed',
+                        upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
+                    CREATE INDEX IF NOT EXISTS idx_user_documents_user_id ON user_documents(user_id);
+                """)
+                # 为已有数据库添加新字段（兼容旧表）
+                try:
+                    cur.execute("""
+                        ALTER TABLE user_documents
+                        ADD COLUMN IF NOT EXISTS file_content BYTEA;
+                    """)
+                except Exception:
+                    pass  # 如果列已存在则忽略
+                try:
+                    cur.execute("""
+                        ALTER TABLE user_documents
+                        ADD COLUMN IF NOT EXISTS parse_status VARCHAR(20) DEFAULT 'completed';
+                    """)
+                except Exception:
+                    pass
+                conn.commit()
             conn.close()
-            return True, "数据库连接成功", "success"
+            return True, "数据库连接成功（用户资料表已创建）", "success"
         else:
             return False, "数据库配置不完整", "warn"
     except Exception as e:
@@ -311,20 +363,42 @@ def _init_rag():
 
 @app.on_event("startup")
 async def startup_event():
-    """服务启动事件"""
-    pass  # 已在main()中预加载完成
+    """服务启动事件 - 预热异步Redis连接池和异步数据库连接池（可选，失败不影响启动，延迟初始化仍可用）"""
+    # 阶段3异步改造：在启动时预热异步Redis连接池，提前暴露连接问题
+    try:
+        from common.config.async_redis import AsyncRedisPool
+        await AsyncRedisPool.get_client()
+    except Exception as e:
+        logger.warning(f"异步Redis预热失败（延迟初始化仍可用）: {e}")
 
-@app.get("/")
-async def serve_index():
-    """提供前端页面"""
-    index_path = os.path.join(STATIC_DIR, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path, headers={
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0"
-        })
-    return {"error": "前端页面不存在"}
+    # 阶段2数据库异步化：在启动时预热 asyncpg 异步数据库连接池，提前暴露连接问题
+    try:
+        from common.config.async_database import AsyncDatabasePool
+        await AsyncDatabasePool.get_pool()
+    except Exception as e:
+        logger.warning(f"异步数据库连接池预热失败（延迟初始化仍可用）: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """服务关闭事件 - 清理异步资源"""
+    # 阶段3异步改造：关闭异步Redis连接池，释放连接资源
+    try:
+        from common.config.async_redis import AsyncRedisPool
+        await AsyncRedisPool.close()
+    except Exception as e:
+        logger.warning(f"关闭异步Redis连接池异常: {e}")
+
+    # 阶段2数据库异步化：关闭 asyncpg 异步数据库连接池，释放连接资源
+    try:
+        from common.config.async_database import AsyncDatabasePool
+        await AsyncDatabasePool.close()
+    except Exception as e:
+        logger.warning(f"关闭异步数据库连接池异常: {e}")
+
+# 挂载静态文件目录 - 提供前端页面（html=True 支持自动查找 index.html）
+# 注意：mount 必须在 API 路由之后，避免覆盖 API 路由
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 def main():
     """启动Web服务"""

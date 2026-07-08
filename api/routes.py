@@ -7,8 +7,8 @@ from config.redis_config import RedisConfig
 from utils.logger import logger
 import json
 import asyncio
-import threading
 import queue
+from common.utils.sse import sse_event
 
 router = APIRouter()
 
@@ -67,6 +67,12 @@ async def query_stream(request: QueryRequest):
     handler = get_query_handler()
 
     async def generate_events():
+        # 阶段6改造说明：
+        # 1. Redis 调用已改为真正的异步实现（async_redis_exact_match/async_cache_retrieval），不再用 asyncio.to_thread 包装。
+        # 2. BM25/数据库的同步调用仍用 asyncio.to_thread 包装。
+        # 3. RAG 流式部分已移除 threading.Thread，改为 asyncio.to_thread + asyncio.create_task（阶段6）。
+        # 4. 兜底策略已使用 async for chunk in llm_client.async_chat_stream(...)（阶段4/6）。
+        # 5. 已移除所有不必要的 await asyncio.sleep(0) 调用。
         # 初始化执行路径记录
         execution_path = []
         final_answer = ""
@@ -80,7 +86,8 @@ async def query_stream(request: QueryRequest):
         }
         yield f"data: {json.dumps(step1, ensure_ascii=False)}\n\n"
 
-        answer = handler.redis_exact_match(request.question)
+        # 阶段3异步改造：替换 asyncio.to_thread 为真正的异步 Redis 调用，避免阻塞事件循环
+        answer = await handler.async_redis_exact_match(request.question)
         if answer is not None:
             step1["status"] = "success"
             step1["detail"] = "Redis缓存命中！"
@@ -111,7 +118,8 @@ async def query_stream(request: QueryRequest):
         }
         yield f"data: {json.dumps(step2, ensure_ascii=False)}\n\n"
 
-        matched_question, prob = handler.bm25_match_with_softmax(request.question)
+        # 阶段1异步改造：用 asyncio.to_thread 包装同步 BM25 调用，避免阻塞事件循环
+        matched_question, prob = await asyncio.to_thread(handler.bm25_match_with_softmax, request.question)
 
         step2["status"] = "success" if prob >= 0.7 and matched_question else "low_match"
         step2["detail"] = f"Softmax最高概率: {prob:.4f} (阈值: 0.7)"
@@ -130,14 +138,16 @@ async def query_stream(request: QueryRequest):
             }
             yield f"data: {json.dumps(step3, ensure_ascii=False)}\n\n"
 
-            answer = handler.redis_exact_match(matched_question)
+            # 阶段3异步改造：替换 asyncio.to_thread 为真正的异步 Redis 调用，避免阻塞事件循环
+            answer = await handler.async_redis_exact_match(matched_question)
             if answer is not None:
                 step3["status"] = "success"
                 step3["detail"] = "Redis缓存命中！"
                 yield f"data: {json.dumps(step3, ensure_ascii=False)}\n\n"
 
                 # 将检索结果写入Redis缓存（只缓存检索结果，不缓存LLM回答）
-                handler.cache_retrieval(request.question, answer)
+                # 阶段3异步改造：替换为真正的异步 Redis 写入调用
+                await handler.async_cache_retrieval(request.question, answer)
 
                 step5 = {
                     "step": 5,
@@ -173,16 +183,18 @@ async def query_stream(request: QueryRequest):
             }
             yield f"data: {json.dumps(step4, ensure_ascii=False)}\n\n"
 
-            answer = handler.query_database(matched_question)
+            # 阶段2数据库异步化：替换 asyncio.to_thread 包装的同步 DB 调用为真正的异步调用
+            answer = await handler.async_query_database(matched_question)
             if answer is not None:
                 step4["status"] = "success"
                 step4["detail"] = "数据库查询命中！正在写入Redis缓存..."
                 yield f"data: {json.dumps(step4, ensure_ascii=False)}\n\n"
 
                 # 将检索结果写入Redis缓存（只缓存检索结果）
-                handler.cache_retrieval(request.question, answer)
+                # 阶段3异步改造：替换为真正的异步 Redis 写入调用
+                await handler.async_cache_retrieval(request.question, answer)
                 if matched_question != request.question:
-                    handler.cache_retrieval(matched_question, answer)
+                    await handler.async_cache_retrieval(matched_question, answer)
 
                 step5 = {
                     "step": 5,
@@ -228,13 +240,13 @@ async def query_stream(request: QueryRequest):
 
             rag_step_offset = 100
             rag_queue = queue.Queue()
-            stream_queue = queue.Queue()  # 流式输出队列
+            stream_queue = queue.Queue()  # 流式输出队列（sync queue，供线程内回调使用）
             answer_result = [None]
             error_result = [None]
             answer_started = [False]  # 标记是否已推送 answer_start
 
             def rag_step_callback(step, name, status, detail, extra=None):
-                """步骤回调：推送RAG执行步骤"""
+                """步骤回调：推送RAG执行步骤（同步函数，在线程中运行）"""
                 rag_step_info = {
                     "step": rag_step_offset + step,
                     "name": name,
@@ -247,13 +259,14 @@ async def query_stream(request: QueryRequest):
                 rag_queue.put(rag_step_info)
 
             def stream_callback(token: str):
-                """流式回调：每个token推送到stream_queue，第一个token时发送answer_start"""
+                """流式回调：每个token推送到stream_queue（同步函数，在线程中运行）"""
                 if not answer_started[0]:
                     answer_started[0] = True
                     stream_queue.put({"type": "answer_start", "detail": "开始生成回答"})
                 stream_queue.put({"type": "answer_chunk", "content": token})
 
-            def rag_worker():
+            def rag_worker_sync():
+                """同步RAG工作函数（在 asyncio.to_thread 线程中运行）"""
                 try:
                     answer_result[0] = rag_retriever.query_stream(
                         request.question,
@@ -266,8 +279,8 @@ async def query_stream(request: QueryRequest):
                     rag_queue.put(None)
                     stream_queue.put(None)  # 流式输出结束标记
 
-            worker_thread = threading.Thread(target=rag_worker)
-            worker_thread.start()
+            # 阶段6改造：使用 asyncio.to_thread + asyncio.create_task 替代 threading.Thread
+            rag_task = asyncio.create_task(asyncio.to_thread(rag_worker_sync))
 
             step5["detail"] = "RAG检索中(意图识别 -> 策略分析 -> 向量化 -> 粗排 -> 精排 -> 生成)..."
             yield f"data: {json.dumps(step5, ensure_ascii=False)}\n\n"
@@ -285,15 +298,14 @@ async def query_stream(request: QueryRequest):
                             stream_event = stream_queue.get_nowait()
                             if stream_event is None:
                                 stream_done = True
-                                answer_done_event = {"type": "answer_done", "detail": "回答生成完成"}
-                                stream_events_batched.append(answer_done_event)
+                                stream_events_batched.append({"type": "answer_done", "detail": "回答生成完成"})
                                 break
                             stream_events_batched.append(stream_event)
                         except queue.Empty:
                             break
 
                 for stream_event in stream_events_batched:
-                    yield f"data: {json.dumps(stream_event, ensure_ascii=False)}\n\n"
+                    yield sse_event(stream_event)
 
                 # 处理步骤队列（非阻塞）
                 if not rag_done:
@@ -302,43 +314,37 @@ async def query_stream(request: QueryRequest):
                         if rag_step is None:
                             rag_done = True
                         else:
-                            yield f"data: {json.dumps(rag_step, ensure_ascii=False)}\n\n"
+                            yield sse_event(rag_step)
                             execution_path.append(rag_step)
                     except queue.Empty:
                         pass
 
-                # 检查worker线程是否结束
-                if not worker_thread.is_alive() and not rag_done:
+                # 检查任务是否完成（替代原来的 worker_thread.is_alive()）
+                if rag_task.done() and not rag_done:
                     while True:
                         try:
                             rag_step = rag_queue.get_nowait()
                             if rag_step is None:
                                 rag_done = True
                                 break
-                            yield f"data: {json.dumps(rag_step, ensure_ascii=False)}\n\n"
+                            yield sse_event(rag_step)
                             execution_path.append(rag_step)
                         except queue.Empty:
                             rag_done = True
                             break
 
-                if not worker_thread.is_alive() and not stream_done:
+                if rag_task.done() and not stream_done:
                     while True:
                         try:
                             stream_event = stream_queue.get_nowait()
                             if stream_event is None:
                                 stream_done = True
-                                answer_done_event = {"type": "answer_done", "detail": "回答生成完成"}
-                                yield f"data: {json.dumps(answer_done_event, ensure_ascii=False)}\n\n"
+                                yield sse_event({"type": "answer_done", "detail": "回答生成完成"})
                                 break
-                            yield f"data: {json.dumps(stream_event, ensure_ascii=False)}\n\n"
+                            yield sse_event(stream_event)
                         except queue.Empty:
                             stream_done = True
                             break
-
-                # 让出CPU，避免忙等待
-                await asyncio.sleep(0.005)
-
-            worker_thread.join(timeout=5)
 
             if error_result[0]:
                 raise error_result[0]
@@ -386,16 +392,18 @@ async def query_stream(request: QueryRequest):
             try:
                 from rag.models.llm_client import llm_client
                 from rag.prompts.prompt_template import prompt_manager
-                
+
                 messages = prompt_manager.build_messages('fallback_answer', question=request.question)
-                
+
                 yield f"data: {json.dumps({'type': 'answer_start', 'detail': '开始生成回答'}, ensure_ascii=False)}\n\n"
-                
+
+                # 阶段4异步改造：兜底策略的 LLM 流式调用改为异步版本，避免阻塞事件循环
+                # 该调用位于 async 生成器 generate_events 内部（非 threading.Thread），可安全 await
                 answer = ""
-                for chunk in llm_client.chat_stream(messages=messages):
+                async for chunk in llm_client.async_chat_stream(messages=messages):
                     answer += chunk
                     yield f"data: {json.dumps({'type': 'answer_chunk', 'content': chunk}, ensure_ascii=False)}\n\n"
-                
+
                 yield f"data: {json.dumps({'type': 'answer_done', 'detail': '回答生成完成'}, ensure_ascii=False)}\n\n"
                 
                 if answer:

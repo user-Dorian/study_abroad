@@ -2,6 +2,9 @@
 import json
 import ssl
 import os
+import asyncio
+import queue
+import threading
 from typing import Optional
 from dotenv import load_dotenv
 import httpx
@@ -183,6 +186,76 @@ class LLMClient:
         except Exception as e:
             logger.error(f"DashScope流式调用失败: {e}")
             raise
+
+    async def async_chat_stream(self, prompt: str = "", messages: list = None, model: Optional[str] = None, temperature: float = 0.1):
+        """
+        异步流式对话（阶段6改造）
+
+        在后台线程中运行同步流式生成器，通过 queue.Queue 桥接到异步事件循环。
+        调用方可使用 `async for chunk in llm_client.async_chat_stream(...)`。
+
+        Args:
+            prompt: 用户输入（兼容旧接口，当messages为空时使用）
+            messages: 完整的消息列表，支持system/user/assistant角色
+            model: 使用的模型名称，None则自动选择
+            temperature: 温度参数
+
+        Yields:
+            模型回答的每个token/chunk
+        """
+        if not model:
+            model = "deepseek-chat" if self.deepseek_client else "qwen-plus"
+
+        # 构建消息列表
+        if messages:
+            msgs = messages
+        else:
+            msgs = [{"role": "user", "content": prompt}]
+
+        # 使用同步 queue.Queue 桥接线程与异步事件循环
+        stream_queue = queue.Queue()
+
+        def _worker():
+            """后台线程：运行同步流式生成器"""
+            try:
+                if self.deepseek_client and "deepseek" in model.lower():
+                    gen = self._call_deepseek_stream(msgs, model, temperature)
+                elif self.dashscope_client:
+                    gen = self._call_dashscope_stream(msgs, model, temperature)
+                else:
+                    raise RuntimeError("未配置任何LLM客户端")
+                for chunk in gen:
+                    stream_queue.put(chunk)
+            except Exception as e:
+                stream_queue.put(("error", str(e)))
+            finally:
+                stream_queue.put(None)
+
+        thread = threading.Thread(target=_worker, daemon=True)
+        thread.start()
+
+        while True:
+            try:
+                chunk = await asyncio.to_thread(lambda: stream_queue.get(timeout=0.05))
+                if chunk is None:
+                    break
+                if isinstance(chunk, tuple) and chunk[0] == "error":
+                    raise RuntimeError(chunk[1])
+                yield chunk
+            except queue.Empty:
+                if not thread.is_alive():
+                    # 线程已结束，处理剩余数据
+                    while True:
+                        try:
+                            chunk = stream_queue.get_nowait()
+                            if chunk is None:
+                                break
+                            if isinstance(chunk, tuple) and chunk[0] == "error":
+                                raise RuntimeError(chunk[1])
+                            yield chunk
+                        except queue.Empty:
+                            break
+                    break
 
     def chat_json(self, prompt: str = "", messages: list = None, model: Optional[str] = None) -> dict:
         """发送对话并解析JSON结果"""

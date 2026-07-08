@@ -3,6 +3,7 @@ import redis
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool
+import asyncio
 import threading
 import numpy as np
 from typing import Optional, Tuple
@@ -266,10 +267,37 @@ class QueryHandler:
             if conn is not None:
                 pool.putconn(conn)
 
+    async def async_query_database(self, question: str) -> Optional[str]:
+        """阶段2数据库异步化：异步数据库查询qa_pairs
+
+        使用 AsyncDatabasePool（asyncpg）查询 qa_pairs 表，避免在 async 路由中阻塞事件循环。
+        与同步 query_database 行为一致：命中返回 answer，未命中或异常返回 None。
+
+        Args:
+            question: 要查询的问题
+
+        Returns:
+            匹配到的答案，未找到返回None
+        """
+        try:
+            from common.config.async_database import AsyncDatabasePool
+            row = await AsyncDatabasePool.execute_one(
+                "SELECT answer FROM qa_pairs WHERE question = $1",
+                question,
+            )
+            if row:
+                logger.info(f"异步数据库查询命中: {question}")
+                return row["answer"]
+            logger.debug(f"异步数据库查询未命中: {question}")
+            return None
+        except Exception as e:
+            logger.error(f"异步数据库查询异常: {e}")
+            return None
+
     def cache_retrieval(self, question: str, context: str) -> bool:
         """
         将检索结果写入Redis缓存（只缓存检索结果，不缓存LLM回答）
-        
+
         Args:
             question: 问题
             context: 检索结果（来自SQL/RAG的原始数据）
@@ -288,6 +316,61 @@ class QueryHandler:
             return True
         except Exception as e:
             logger.error(f"检索结果缓存写入异常: {e}")
+            return False
+
+    # ====== 阶段3异步改造：新增异步Redis方法（保留同步方法不变） ======
+
+    async def async_redis_exact_match(self, question: str) -> Optional[str]:
+        """
+        异步版Redis检索结果精确匹配
+
+        使用 redis.asyncio 客户端，避免在 async 路由中阻塞事件循环。
+        与同步方法 redis_exact_match 行为一致：命中时刷新TTL，未命中返回None。
+
+        Args:
+            question: 用户输入的问题
+
+        Returns:
+            匹配到的检索结果（来自SQL/RAG的原始数据），未命中或异常返回None
+        """
+        try:
+            from common.config.async_redis import AsyncRedisPool
+            client = await AsyncRedisPool.get_client()
+            key = f"{RedisConfig.KEY_PREFIX_RETRIEVAL}{question}"
+            result = await client.get(key)
+            if result:
+                await client.expire(key, RedisConfig.TTL)
+                logger.info(f"异步Redis检索结果命中: {question}")
+                return result
+            logger.debug(f"异步Redis检索结果未命中: {question}")
+            return None
+        except Exception as e:
+            logger.error(f"异步Redis检索结果匹配异常: {e}")
+            return None
+
+    async def async_cache_retrieval(self, question: str, context: str) -> bool:
+        """
+        异步版检索结果缓存写入
+
+        使用 redis.asyncio 客户端，避免在 async 路由中阻塞事件循环。
+        与同步方法 cache_retrieval 行为一致：只缓存检索结果，不缓存LLM回答。
+
+        Args:
+            question: 问题
+            context: 检索结果（来自SQL/RAG的原始数据）
+
+        Returns:
+            写入是否成功
+        """
+        try:
+            from common.config.async_redis import AsyncRedisPool
+            client = await AsyncRedisPool.get_client()
+            key = f"{RedisConfig.KEY_PREFIX_RETRIEVAL}{question}"
+            await client.setex(key, RedisConfig.TTL, context)
+            logger.info(f"检索结果已异步缓存到Redis: {question} (TTL={RedisConfig.TTL}s)")
+            return True
+        except Exception as e:
+            logger.error(f"异步检索结果缓存写入异常: {e}")
             return False
 
     def rag_retrieve(self, question: str, step_callback=None) -> Optional[str]:
@@ -314,6 +397,36 @@ class QueryHandler:
             return context
         except Exception as e:
             logger.error(f"RAG检索异常: {e}")
+            raise
+
+    # ====== 阶段5异步化改造：异步版RAG检索（保留同步rag_retrieve不变） ======
+
+    async def async_rag_retrieve(self, question: str, step_callback=None) -> Optional[str]:
+        """
+        异步版RAG检索
+
+        使用 asyncio.to_thread 包装同步 rag_retriever.query 调用，
+        避免在 async 路由中阻塞事件循环。
+
+        Args:
+            question: 用户输入的问题
+            step_callback: 可选的步骤回调函数
+
+        Returns:
+            RAG检索返回的上下文文本，检索失败返回None
+        """
+        try:
+            from rag.retrieval.rag_retriever import rag_retriever
+            logger.info(f"进入异步RAG检索模块: {question}")
+
+            if step_callback:
+                rag_retriever.set_step_callback(step_callback)
+
+            # 使用asyncio.to_thread包装同步rag_retriever.query
+            context = await asyncio.to_thread(rag_retriever.query, question)
+            return context
+        except Exception as e:
+            logger.error(f"异步RAG检索异常: {e}")
             raise
 
     def fallback_to_llm(self, question: str, history_messages: list = None) -> Optional[str]:

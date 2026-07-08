@@ -24,12 +24,13 @@ class ConversationManager:
         self._cache_lock = threading.Lock()
         logger.info("ConversationManager 初始化成功")
     
-    def create_conversation(self, title: str = None) -> dict:
+    def create_conversation(self, title: str = None, user_id: Optional[str] = None) -> dict:
         """
         创建新会话
         
         Args:
             title: 会话标题，为 None 时使用默认标题
+            user_id: 可选的用户ID
             
         Returns:
             dict: 包含 {id, title, created_at, updated_at} 的会话信息
@@ -41,7 +42,7 @@ class ConversationManager:
                 logger.debug(f"使用默认标题: {title}")
             
             # 调用仓库层创建会话
-            result = self._conv_repo.create_conversation(title)
+            result = self._conv_repo.create_conversation(title, user_id=user_id)
             logger.info(f"创建会话成功: id={result['id']}, title={title}")
             return result
             
@@ -49,18 +50,19 @@ class ConversationManager:
             logger.error(f"创建会话失败: title={title}, error={e}")
             raise
     
-    def get_conversation(self, conversation_id: str) -> Optional[dict]:
+    def get_conversation(self, conversation_id: str, user_id: Optional[str] = None) -> Optional[dict]:
         """
         获取单个会话
         
         Args:
             conversation_id: 会话ID
+            user_id: 可选的用户ID
             
         Returns:
             dict | None: 会话信息字典，不存在时返回 None
         """
         try:
-            result = self._conv_repo.get_conversation(conversation_id)
+            result = self._conv_repo.get_conversation(conversation_id, user_id=user_id)
             if result is None:
                 logger.debug(f"会话不存在: id={conversation_id}")
             else:
@@ -71,22 +73,42 @@ class ConversationManager:
             logger.error(f"获取会话失败: id={conversation_id}, error={e}")
             raise
     
-    def list_conversations(self) -> list:
+    def list_conversations(self, user_id: Optional[str] = None) -> list:
         """
         获取所有会话列表，按 updated_at 降序排列
-        
+
+        Args:
+            user_id: 可选的用户ID
+
         Returns:
             list[dict]: 会话信息列表
         """
         try:
-            result = self._conv_repo.list_conversations()
+            result = self._conv_repo.list_conversations(user_id=user_id)
             logger.debug(f"获取会话列表成功: 共 {len(result)} 条")
             return result
-            
+
         except Exception as e:
             logger.error(f"获取会话列表失败: error={e}")
             raise
-    
+
+    def find_empty_conversation(self, user_id: str) -> Optional[dict]:
+        """
+        查找用户的空对话（无消息），每人最多一个
+
+        Args:
+            user_id: 用户ID
+
+        Returns:
+            dict | None: 空对话信息
+        """
+        try:
+            result = self._conv_repo.find_empty_conversation(user_id)
+            return result
+        except Exception as e:
+            logger.error(f"查找空对话失败: user_id={user_id}, error={e}")
+            raise
+
     def rename_conversation(self, conversation_id: str, new_title: str) -> bool:
         """
         重命名会话
@@ -110,18 +132,19 @@ class ConversationManager:
             logger.error(f"重命名会话失败: id={conversation_id}, error={e}")
             raise
     
-    def delete_conversation(self, conversation_id: str) -> bool:
+    def delete_conversation(self, conversation_id: str, user_id: Optional[str] = None) -> bool:
         """
         删除会话（级联删除关联消息）
         
         Args:
             conversation_id: 会话ID
+            user_id: 可选的用户ID
             
         Returns:
             bool: 删除成功返回 True，会话不存在返回 False
         """
         try:
-            result = self._conv_repo.delete_conversation(conversation_id)
+            result = self._conv_repo.delete_conversation(conversation_id, user_id=user_id)
             if result:
                 logger.info(f"删除会话成功: id={conversation_id}")
             else:

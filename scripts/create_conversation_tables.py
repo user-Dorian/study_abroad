@@ -20,6 +20,65 @@ from config.database import DatabaseConfig
 from utils.logger import logger
 
 
+def create_users_table(cursor):
+    """
+    创建用户表 (users)
+
+    表结构说明：
+    - id: 用户唯一标识符，使用 UUID 自动生成
+    - username: 用户名，唯一
+    - password_hash: bcrypt 密码哈希
+    - email: 邮箱（可选）
+    - display_name: 显示名称
+    - created_at: 创建时间
+    - updated_at: 更新时间
+
+    Args:
+        cursor: 数据库游标对象
+    """
+    create_users_sql = """
+    CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        email VARCHAR(100),
+        display_name VARCHAR(100),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+    """
+    cursor.execute(create_users_sql)
+    logger.info("users 表创建成功（或已存在）")
+
+
+def add_user_id_to_conversations(cursor):
+    """
+    为 conversations 表添加 user_id 外键列
+
+    幂等操作：如果列已存在则跳过。
+
+    Args:
+        cursor: 数据库游标对象
+    """
+    # 先检查列是否存在
+    cursor.execute("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'conversations' AND column_name = 'user_id'
+    """)
+    if cursor.fetchone() is None:
+        cursor.execute("""
+            ALTER TABLE conversations
+            ADD COLUMN user_id UUID REFERENCES users(id) ON DELETE CASCADE
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_conversations_user_id
+            ON conversations(user_id)
+        """)
+        logger.info("conversations 表添加 user_id 列成功")
+    else:
+        logger.info("conversations 表已存在 user_id 列，跳过")
+
+
 def create_conversations_table(cursor):
     """
     创建对话会话表 (conversations)
@@ -157,17 +216,23 @@ def create_conversation_tables():
         cursor = connection.cursor()
         
         logger.info("=" * 60)
-        logger.info("开始创建对话管理相关的数据库表")
+        logger.info("开始创建数据库表")
         logger.info("=" * 60)
-        
-        # 步骤1: 创建 conversations 表
+
+        # 步骤1: 创建 users 表
+        create_users_table(cursor)
+
+        # 步骤2: 为 conversations 表添加 user_id 列（幂等）
+        add_user_id_to_conversations(cursor)
+
+        # 步骤3: 创建 conversations 表
         create_conversations_table(cursor)
-        
-        # 步骤2: 创建 messages 表
+
+        # 步骤4: 创建 messages 表
         # 注意：必须在 conversations 表之后创建，因为有外键依赖
         create_messages_table(cursor)
-        
-        # 步骤3: 创建索引
+
+        # 步骤5: 创建索引
         create_indexes(cursor)
         
         # 提交事务

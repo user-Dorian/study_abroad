@@ -33,6 +33,16 @@ Thumbs.db
 test_*.py
 scripts/test_*.py
 
+# ====== 私有开发脚本（根目录下 _ 前缀）======
+/_*.py
+
+# ====== 文档 ======
+docs/
+
+# ====== 临时文件 ======
+@*
+*_交互文档.md
+
 # ====== 测试输出 ======
 test_sse.txt
 test_sse_output.txt

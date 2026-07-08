@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业留学通 - 智能咨询助手</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #1f2937;
+            background: #f0f4f8;
+        }
+
+        /* ===== App Layout ===== */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== Navbar ===== */
+        .navbar {
+            flex-shrink: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #1a237e, #283593);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 2;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .navbar-user .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .navbar-user .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: border-color 0.2s ease;
+        }
+
+        .navbar-user .user-avatar svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 2;
+        }
+
+        .navbar-user:hover .user-avatar {
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* User dropdown */
+        .user-dropdown {
+            position: absolute;
+            top: 44px;
+            right: 0;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            padding: 6px;
+            display: none;
+            z-index: 200;
+            animation: dropdownIn 0.2s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        @keyframes dropdownIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-dropdown .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            font-family: inherit;
+            text-align: left;
+        }
+
+        .user-dropdown .dropdown-item:hover {
+            background: #f3f4f6;
+        }
+
+        .user-dropdown .dropdown-item svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .user-dropdown .dropdown-item.danger {
+            color: #dc2626;
+        }
+
+        .user-dropdown .dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+
+        .user-dropdown .dropdown-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 4px 0;
+        }
+
+        .user-dropdown .user-info-item {
+            padding: 8px 14px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* ===== Main Content ===== */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ===== Sidebar ===== */
+        .sidebar {
+            flex: 0 0 280px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px 16px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .sidebar-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .sidebar-header .new-chat-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-header .new-chat-btn:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+        }
+
+        .sidebar-header .new-chat-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: #6b7280;
+            stroke-width: 2;
+        }
+
+        .sidebar-header .new-chat-btn:hover svg {
+            stroke: #3949ab;
+        }
+
+        .conversation-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 8px 12px;
+        }
+
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            gap: 10px;
+            margin-bottom: 2px;
+            position: relative;
+        }
+
+        .conversation-item:hover {
+            background: #f3f4f6;
+        }
+
+        .conversation-item.active {
+            background: #eef2ff;
+        }
+
+        .conversation-item .conv-icon {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .conversation-item .conv-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: #9ca3af;
+            stroke-width: 2;
+        }
+
+        .conversation-item.active .conv-icon svg {
+            stroke: #3949ab;
+        }
+
+        .conversation-item .conv-title {
+            flex: 1;
+            font-size: 14px;
+            color: #374151;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .conversation-item .conv-delete {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease;
+            opacity: 0.6;
+        }
+
+        .conversation-item:hover .conv-delete {
+            display: flex;
+        }
+
+        .conversation-item .conv-delete:hover {
+            background: #fef2f2;
+            opacity: 1;
+        }
+
+        .conversation-item .conv-delete svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: #dc2626;
+            stroke-width: 2;
+        }
+
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #f3f4f6;
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        /* ===== Chat Area ===== */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f9fafb;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 14px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+
+        .chat-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .chat-header p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        /* ===== Messages ===== */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .messages-container:empty {
+            justify-content: center;
+            align-items: center;
+        }
+
+        .messages-container:empty::after {
+            content: '开始新的咨询对话，输入您的问题';
+            font-size: 15px;
+            color: #9ca3af;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message.system {
+            align-self: center;
+            max-width: 100%;
+        }
+
+        .message .msg-avatar {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.user .msg-avatar {
+            background: #1a237e;
+        }
+
+        .message.user .msg-avatar svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 2;
+        }
+
+        .message.assistant .msg-avatar {
+            background: #e8eaf6;
+        }
+
+        .message.assistant .msg-avatar svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #1a237e;
+            stroke-width: 2;
+        }
+
+        .message .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.7;
+            word-break: break-word;
+        }
+
+        .message.user .msg-bubble {
+            background: #1a237e;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .msg-bubble {
+            background: #ffffff;
+            color: #1f2937;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .message.system .msg-bubble {
+            background: #f3f4f6;
+            color: #6b7280;
+            border-radius: 12px;
+            font-size: 13px;
+            padding: 8px 16px;
+            text-align: center;
+        }
+
+        .message.system .msg-bubble .step-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .message.system .msg-bubble .step-status {
+            display: inline-block;
+            margin-left: 4px;
+        }
+
+        .message.system .msg-bubble .step-status.running {
+            color: #f59e0b;
+        }
+        .message.system .msg-bubble .step-status.success {
+            color: #10b981;
+        }
+        .message.system .msg-bubble .step-status.error {
+            color: #ef4444;
+        }
+        .message.system .msg-bubble .step-status.miss,
+        .message.system .msg-bubble .step-status.skip {
+            color: #6b7280;
+        }
+        .message.system .msg-bubble .step-status.low_match,
+        .message.system .msg-bubble .step-status.not_implemented {
+            color: #f59e0b;
+        }
+
+        .message .msg-time {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        .message.user .msg-time {
+            text-align: right;
+        }
+
+        /* Thinking indicator */
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .thinking-indicator .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: thinkingBounce 1.4s ease-in-out infinite;
+        }
+
+        .thinking-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .thinking-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes thinkingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-4px);
+                opacity: 1;
+            }
+        }
+
+        /* Markdown content styling */
+        .msg-bubble p {
+            margin-bottom: 8px;
+        }
+        .msg-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .msg-bubble ul, .msg-bubble ol {
+            margin: 6px 0;
+            padding-left: 20px;
+        }
+        .msg-bubble li {
+            margin-bottom: 4px;
+        }
+        .msg-bubble strong {
+            font-weight: 600;
+        }
+        .msg-bubble code {
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        }
+        .message.user .msg-bubble code {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* ===== Input Area ===== */
+        .input-area {
+            flex-shrink: 0;
+            padding: 16px 24px 20px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            background: #f9fafb;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 4px 4px 4px 16px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #3949ab;
+            box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.10);
+            background: #ffffff;
+        }
+
+        .input-wrapper textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1f2937;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            line-height: 1.5;
+            min-height: 24px;
+        }
+
+        .input-wrapper textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-wrapper .send-btn {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #1a237e, #3949ab);
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .input-wrapper .send-btn:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.30);
+            transform: translateY(-1px);
+        }
+
+        .input-wrapper .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #9ca3af;
+        }
+
+        .input-wrapper .send-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
+            padding-left: 4px;
+        }
+
+        /* ===== Status Panel (检索流程) ===== */
+        .status-panel {
+            flex: 0 0 300px;
+            background: #ffffff;
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: flex-basis 0.25s ease;
+        }
+
+        .status-panel.collapsed {
+            flex-basis: 44px;
+        }
+
+        .status-panel-header {
+            padding: 14px 16px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            cursor: pointer;
+            user-select: none;
+            min-height: 44px;
+        }
+
+        .status-panel.collapsed .status-panel-header {
+            border-bottom: none;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 8px;
+            padding: 10px 6px;
+        }
+
+        .status-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .status-panel.collapsed .status-panel-title {
+            flex-direction: column;
+            gap: 4px;
+            font-size: 11px;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 2px;
+        }
+
+        .status-panel-title svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #3949ab;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .status-panel.collapsed .status-panel-title svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .status-panel-toggle {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .status-panel-toggle:hover {
+            background: #f3f4f6;
+        }
+
+        .status-panel-toggle svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: #6b7280;
+            stroke-width: 2;
+            transition: transform 0.25s ease;
+        }
+
+        .status-panel.collapsed .status-panel-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        .status-panel.collapsed .status-panel-toggle {
+            display: none;
+        }
+
+        .status-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .status-panel.collapsed .status-panel-content {
+            display: none;
+        }
+
+        .status-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 160px;
+            color: #9ca3af;
+            font-size: 13px;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .status-empty svg {
+            width: 40px;
+            height: 40px;
+            fill: none;
+            stroke: #d1d5db;
+            stroke-width: 1.5;
+        }
+
+        .status-timeline {
+            position: relative;
+        }
+
+        .status-step {
+            position: relative;
+            padding: 6px 0 14px 32px;
+            min-height: 36px;
+        }
+
+        /* timeline connector line */
+        .status-step::before {
+            content: '';
+            position: absolute;
+            left: 13px;
+            top: 26px;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+
+        .status-step:last-child::before {
+            display: none;
+        }
+
+        .status-step-icon {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            background: #f3f4f6;
+            color: #6b7280;
+            z-index: 1;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #e5e7eb;
+        }
+
+        .status-step-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .status-step.running .status-step-icon {
+            background: #fef3c7;
+            color: #f59e0b;
+            box-shadow: 0 0 0 1px #fcd34d;
+            animation: stepPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes stepPulse {
+            0%, 100% { box-shadow: 0 0 0 1px #fcd34d; }
+            50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25); }
+        }
+
+        .status-step.running .status-step-icon .icon-spinner {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            border: 2px solid #f59e0b;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-step.success .status-step-icon {
+            background: #d1fae5;
+            color: #10b981;
+            box-shadow: 0 0 0 1px #6ee7b7;
+        }
+
+        .status-step.miss .status-step-icon {
+            background: #fef3c7;
+            color: #d97706;
+            box-shadow: 0 0 0 1px #fcd34d;
+        }
+
+        .status-step.skip .status-step-icon {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .status-step.error .status-step-icon {
+            background: #fee2e2;
+            color: #ef4444;
+            box-shadow: 0 0 0 1px #fca5a5;
+        }
+
+        .status-step.low_match .status-step-icon,
+        .status-step.not_implemented .status-step-icon {
+            background: #fef3c7;
+            color: #d97706;
+            box-shadow: 0 0 0 1px #fcd34d;
+        }
+
+        .status-step-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .status-step.running .status-step-name {
+            color: #b45309;
+            font-weight: 600;
+        }
+
+        .status-step.success .status-step-name {
+            color: #065f46;
+        }
+
+        .status-step.error .status-step-name {
+            color: #b91c1c;
+        }
+
+        .status-step-detail {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .status-footer {
+            margin-top: 14px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-footer.complete {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status-footer.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .status-footer.cancelled {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+
+        .status-panel-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .status-panel-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .status-panel-content::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .status-panel-content::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            gap: 16px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            fill: none;
+            stroke: #d1d5db;
+            stroke-width: 1.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #9ca3af;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        /* ===== Scrollbar ===== */
+        .conversation-list::-webkit-scrollbar,
+        .messages-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .conversation-list::-webkit-scrollbar-track,
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .conversation-list::-webkit-scrollbar-thumb,
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .conversation-list::-webkit-scrollbar-thumb:hover,
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .sidebar {
+                flex: 0 0 220px;
+            }
+
+            .status-panel {
+                flex: 0 0 240px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .input-area {
+                padding: 12px 16px 16px;
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .messages-container {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                display: none;
+            }
+
+            .sidebar.mobile-show {
+                display: flex;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 50;
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .status-panel {
+                flex: 0 0 44px;
+            }
+
+            .status-panel .status-panel-content {
+                display: none;
+            }
+
+            .status-panel .status-panel-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- ===== Navbar ===== -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="8" width="22" height="16" rx="3" stroke="currentColor" fill="none" stroke-width="2"/>
+                    <path d="M3 13h22" stroke="currentColor" stroke-width="2"/>
+                    <rect x="10" y="4" width="8" height="4" rx="1.5" stroke="currentColor" fill="none" stroke-width="2"/>
+                    <path d="M14 16v5M11.5 18l2.5 3 2.5-3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                企业留学通
+            </div>
+            <div class="navbar-user" id="userMenu">
+                <span class="user-name" id="displayName">用户</span>
+                <div class="user-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-info-item" id="dropdownUsername"></div>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item danger" id="logoutBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        退出登录
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ===== Main ===== -->
+        <div class="main">
+            <!-- ===== Sidebar ===== -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3>对话列表</h3>
+                    <button class="new-chat-btn" id="newChatBtn" title="新建对话">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="conversation-list" id="conversationList">
+                    <!-- conversation items rendered by JS -->
+                </div>
+                <div class="sidebar-footer">
+                    企业留学通 v1.0
+                </div>
+            </aside>
+
+            <!-- ===== Chat Area ===== -->
+            <section class="chat-area">
+                <div class="chat-header">
+                    <h2 id="chatTitle">新对话</h2>
+                    <p id="chatDesc">企业智能留学咨询助手，为您提供专业解答</p>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <!-- messages rendered by JS -->
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" rows="1" placeholder="输入您的问题..." maxlength="2000"></textarea>
+                        <button class="send-btn" id="sendBtn" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-hint">按 Enter 发送，Shift + Enter 换行</div>
+                </div>
+            </section>
+
+            <!-- ===== Status Panel (检索流程) ===== -->
+            <aside class="status-panel" id="statusPanel">
+                <div class="status-panel-header" id="statusPanelHeader" title="点击折叠/展开">
+                    <div class="status-panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span class="status-panel-title-text">检索流程</span>
+                    </div>
+                    <button class="status-panel-toggle" id="statusPanelToggle" type="button" title="折叠/展开" aria-label="折叠/展开检索流程面板">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="status-panel-content" id="statusPanelContent">
+                    <div class="status-empty" id="statusEmpty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>等待查询...</span>
+                    </div>
+                    <div class="status-timeline" id="statusTimeline" style="display:none;"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            // ============================
+            //  1. Auth check
+            // ============================
+            const token = localStorage.getItem('consultant-auth-token');
+            if (!token) {
+                window.location.replace('/login.html');
+                return;
+            }
+
+            // ============================
+            //  2. State
+            // ============================
+            const API_BASE = window.location.origin;
+            let currentConversationId = null;
+            let conversations = [];
+            let isStreaming = false;
+            let abortController = null;
+
+            // ============================
+            //  3. DOM references
+            // ============================
+            const sidebar = document.getElementById('sidebar');
+            const conversationList = document.getElementById('conversationList');
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const newChatBtn = document.getElementById('newChatBtn');
+            const chatTitle = document.getElementById('chatTitle');
+            const chatDesc = document.getElementById('chatDesc');
+            const displayName = document.getElementById('displayName');
+            const userMenu = document.getElementById('userMenu');
+            const userDropdown = document.getElementById('userDropdown');
+            const dropdownUsername = document.getElementById('dropdownUsername');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // Status panel (检索流程)
+            const statusPanel = document.getElementById('statusPanel');
+            const statusPanelHeader = document.getElementById('statusPanelHeader');
+            const statusPanelToggle = document.getElementById('statusPanelToggle');
+            const statusPanelContent = document.getElementById('statusPanelContent');
+            const statusEmpty = document.getElementById('statusEmpty');
+            const statusTimeline = document.getElementById('statusTimeline');
+            let statusStepMap = {}; // step index -> element
+
+            // User info
+            let userInfo = null;
+            try {
+                userInfo = JSON.parse(localStorage.getItem('consultant-auth-user') || '{}');
+                var name = userInfo.display_name || userInfo.username || '用户';
+                displayName.textContent = name;
+                dropdownUsername.textContent = name + (userInfo.role ? ' (' + userInfo.role + ')' : '');
+            } catch (e) {
+                displayName.textContent = '用户';
+            }
+
+            // ============================
+            //  4. API helpers
+            // ============================
+            function getAuthHeaders() {
+                return {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json',
+                };
+            }
+
+            async function apiGet(path) {
+                var resp = await fetch(API_BASE + path, {
+                    headers: getAuthHeaders(),
+                });
+                if (resp.status === 401) {
+                    localStorage.removeItem('consultant-auth-token');
+                    localStorage.removeItem('consultant-auth-user');
+                    window.location.replace('/login.html');
+                    return null;
+                }
+                var data = await resp.json();
+                if (!resp.ok) {
+                    throw new Error((data && data.detail) || '请求失败');
+                }
+                return data;
+            }
+
+            async function apiPost(path, body) {
+                var resp = await fetch(API_BASE + path, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: body ? JSON.stringify(body) : undefined,
+                });
+                if (resp.status === 401) {
+                    localStorage.removeItem('consultant-auth-token');
+                    localStorage.removeItem('consultant-auth-user');
+                    window.location.replace('/login.html');
+                    return null;
+                }
+                var data = await resp.json();
+                if (!resp.ok) {
+                    throw new Error((data && data.detail) || '请求失败');
+                }
+                return data;
+            }
+
+            async function apiDelete(path) {
+                var resp = await fetch(API_BASE + path, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders(),
+                });
+                if (resp.status === 401) {
+                    localStorage.removeItem('consultant-auth-token');
+                    localStorage.removeItem('consultant-auth-user');
+                    window.location.replace('/login.html');
+                    return null;
+                }
+                var data = await resp.json();
+                if (!resp.ok) {
+                    throw new Error((data && data.detail) || '请求失败');
+                }
+                return data;
+            }
+
+            // ============================
+            //  5. User dropdown
+            // ============================
+            userMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function () {
+                userDropdown.classList.remove('show');
+            });
+
+            logoutBtn.addEventListener('click', function () {
+                localStorage.removeItem('consultant-auth-token');
+                localStorage.removeItem('consultant-auth-user');
+                window.location.replace('/login.html');
+            });
+
+            // ============================
+            //  5b. Status panel toggle (检索流程 折叠/展开)
+            // ============================
+            function toggleStatusPanel() {
+                statusPanel.classList.toggle('collapsed');
+            }
+
+            statusPanelHeader.addEventListener('click', function (e) {
+                // 点击标题栏整体切换折叠状态
+                e.stopPropagation();
+                toggleStatusPanel();
+            });
+
+            // ============================
+            //  6. Conversation list
+            // ============================
+            async function loadConversations() {
+                try {
+                    var data = await apiGet('/api/conversations');
+                    if (data === null) return;
+                    conversations = Array.isArray(data) ? data : (data.conversations || []);
+                    renderConversationList();
+                } catch (err) {
+                    console.error('Failed to load conversations:', err);
+                }
+            }
+
+            function renderConversationList() {
+                conversationList.innerHTML = '';
+                if (!conversations || conversations.length === 0) {
+                    var empty = document.createElement('div');
+                    empty.style.cssText = 'text-align:center;padding:32px 16px;color:#9ca3af;font-size:14px;';
+                    empty.textContent = '暂无对话，点击 + 新建';
+                    conversationList.appendChild(empty);
+                    return;
+                }
+
+                conversations.forEach(function (conv) {
+                    var item = document.createElement('div');
+                    item.className = 'conversation-item' + (conv.id === currentConversationId ? ' active' : '');
+                    item.dataset.id = conv.id;
+
+                    var title = conv.title || '新对话';
+
+                    item.innerHTML =
+                        '<div class="conv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
+                        '<div class="conv-title">' + escapeHtml(title) + '</div>' +
+                        '<button class="conv-delete" data-id="' + conv.id + '" title="删除对话">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+                        '</button>';
+
+                    item.addEventListener('click', function (e) {
+                        if (e.target.closest('.conv-delete')) return;
+                        switchConversation(conv.id);
+                    });
+
+                    var deleteBtn = item.querySelector('.conv-delete');
+                    deleteBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        deleteConversation(conv.id);
+                    });
+
+                    conversationList.appendChild(item);
+                });
+            }
+
+            // ============================
+            //  7. Switch conversation
+            // ============================
+            async function switchConversation(convId) {
+                if (isStreaming) {
+                    cancelStreaming();
+                    // small delay to allow cancel
+                    await new Promise(function (r) { setTimeout(r, 100); });
+                }
+
+                currentConversationId = convId;
+                renderConversationList();
+
+                var conv = conversations.find(function (c) { return c.id === convId; });
+                chatTitle.textContent = conv && conv.title ? conv.title : '新对话';
+                chatDesc.textContent = '企业智能留学咨询助手';
+
+                messagesContainer.innerHTML = '';
+                messagesContainer.style.display = '';
+
+                try {
+                    var msgs = await apiGet('/api/conversations/' + convId + '/messages');
+                    if (msgs === null) return;
+                    var messageList = Array.isArray(msgs) ? msgs : (msgs.messages || []);
+                    messageList.forEach(function (msg) {
+                        appendMessage(msg.role, msg.content);
+                    });
+                    scrollToBottom();
+                } catch (err) {
+                    console.error('Failed to load messages:', err);
+                }
+            }
+
+            // ============================
+            //  8. New conversation
+            // ============================
+            async function createNewConversation() {
+                if (isStreaming) {
+                    cancelStreaming();
+                    await new Promise(function (r) { setTimeout(r, 100); });
+                }
+
+                try {
+                    var conv = await apiPost('/api/conversations/ensure-empty');
+                    if (conv === null) return;
+                    currentConversationId = conv.id;
+                    chatTitle.textContent = '新对话';
+                    chatDesc.textContent = '企业智能留学咨询助手';
+                    messagesContainer.innerHTML = '';
+                    messagesContainer.style.display = '';
+                    await loadConversations();
+                } catch (err) {
+                    console.error('Failed to create conversation:', err);
+                    // Fallback: create normally
+                    try {
+                        var conv = await apiPost('/api/conversations', {});
+                        if (conv === null) return;
+                        currentConversationId = conv.id;
+                        chatTitle.textContent = '新对话';
+                        chatDesc.textContent = '企业智能留学咨询助手';
+                        messagesContainer.innerHTML = '';
+                        messagesContainer.style.display = '';
+                        await loadConversations();
+                    } catch (e2) {
+                        console.error('Failed to create conversation (fallback):', e2);
+                    }
+                }
+            }
+
+            newChatBtn.addEventListener('click', createNewConversation);
+
+            // ============================
+            //  9. Delete conversation
+            // ============================
+            async function deleteConversation(convId) {
+                try {
+                    await apiDelete('/api/conversations/' + convId);
+                    if (convId === currentConversationId) {
+                        currentConversationId = null;
+                        messagesContainer.innerHTML = '';
+                        messagesContainer.style.display = '';
+                        chatTitle.textContent = '新对话';
+                        chatDesc.textContent = '企业智能留学咨询助手';
+                    }
+                    await loadConversations();
+                } catch (err) {
+                    console.error('Failed to delete conversation:', err);
+                }
+            }
+
+            // ============================
+            //  10. Send message
+            // ============================
+            function autoResizeTextarea() {
+                messageInput.style.height = 'auto';
+                var newHeight = Math.min(messageInput.scrollHeight, 120);
+                messageInput.style.height = newHeight + 'px';
+            }
+
+            messageInput.addEventListener('input', function () {
+                autoResizeTextarea();
+                var val = this.value.trim();
+                sendBtn.disabled = !val || isStreaming;
+            });
+
+            messageInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendBtn.disabled) {
+                        sendMessage();
+                    }
+                }
+            });
+
+            sendBtn.addEventListener('click', sendMessage);
+
+            async function sendMessage() {
+                var question = messageInput.value.trim();
+                if (!question || isStreaming || !currentConversationId) return;
+
+                messageInput.value = '';
+                autoResizeTextarea();
+                sendBtn.disabled = true;
+
+                // 新查询开始时清空旧的检索流程步骤
+                clearStatusPanel();
+
+                // Append user message
+                appendMessage('user', question);
+                scrollToBottom();
+
+                // Show thinking indicator
+                var thinkingId = showThinking();
+                scrollToBottom();
+
+                isStreaming = true;
+                abortController = new AbortController();
+
+                var answerBubbleId = null;
+                var fullAnswer = '';
+
+                try {
+                    var resp = await fetch(API_BASE + '/api/conversations/' + currentConversationId + '/query', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ question: question }),
+                        signal: abortController.signal,
+                    });
+
+                    if (resp.status === 401) {
+                        localStorage.removeItem('consultant-auth-token');
+                        localStorage.removeItem('consultant-auth-user');
+                        window.location.replace('/login.html');
+                        return;
+                    }
+
+                    if (!resp.ok) {
+                        var errData = await resp.json().catch(function () { return {}; });
+                        removeThinking(thinkingId);
+                        showStatusFooter('查询失败: ' + (errData.detail || resp.statusText), 'error');
+                        isStreaming = false;
+                        sendBtn.disabled = !messageInput.value.trim();
+                        return;
+                    }
+
+                    var reader = resp.body.getReader();
+                    var decoder = new TextDecoder();
+                    var buffer = '';
+
+                    while (true) {
+                        var result = await reader.read();
+                        if (result.done) break;
+
+                        buffer += decoder.decode(result.value, { stream: true });
+                        var lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (var i = 0; i < lines.length; i++) {
+                            var line = lines[i].trim();
+                            if (!line || !line.startsWith('data: ')) continue;
+                            var jsonStr = line.slice(6);
+                            try {
+                                var event = JSON.parse(jsonStr);
+
+                                if (event.type === 'answer_start') {
+                                    removeThinking(thinkingId);
+                                    if (!answerBubbleId) {
+                                        answerBubbleId = appendMessage('assistant', '', true);
+                                    }
+                                } else if (event.type === 'answer_chunk') {
+                                    if (answerBubbleId) {
+                                        fullAnswer += event.content;
+                                        updateMessageContent(answerBubbleId, fullAnswer);
+                                        scrollToBottom();
+                                    }
+                                } else if (event.type === 'answer_done') {
+                                    // Done, nothing special needed
+                                } else if (event.type === 'result') {
+                                    if (event.answer && !fullAnswer) {
+                                        if (answerBubbleId) {
+                                            fullAnswer = event.answer;
+                                            updateMessageContent(answerBubbleId, fullAnswer);
+                                        } else {
+                                            removeThinking(thinkingId);
+                                            appendMessage('assistant', event.answer);
+                                        }
+                                    }
+                                    // 在状态面板底部显示完成提示
+                                    showStatusFooter('检索完成', 'complete');
+                                } else if (event.step !== undefined) {
+                                    // Step event - 更新检索流程状态面板（不再插入聊天流）
+                                    addOrUpdateStatusStep(event);
+                                }
+                            } catch (e) {
+                                // skip invalid JSON
+                            }
+                        }
+                    }
+
+                    // Process remaining buffer
+                    if (buffer.trim().startsWith('data: ')) {
+                        try {
+                            var event = JSON.parse(buffer.trim().slice(6));
+                            if (event.type === 'answer_chunk' && answerBubbleId) {
+                                fullAnswer += event.content;
+                                updateMessageContent(answerBubbleId, fullAnswer);
+                            } else if (event.type === 'answer_done' || event.type === 'result') {
+                                // already handled
+                            }
+                        } catch (e) {}
+                    }
+
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        removeThinking(thinkingId);
+                        showStatusFooter('回答已取消', 'cancelled');
+                    } else {
+                        removeThinking(thinkingId);
+                        showStatusFooter('请求失败: ' + err.message, 'error');
+                    }
+                } finally {
+                    isStreaming = false;
+                    sendBtn.disabled = !messageInput.value.trim();
+                    abortController = null;
+                    // Refresh conversation list (title might have updated)
+                    loadConversations();
+                }
+            }
+
+            function cancelStreaming() {
+                if (abortController) {
+                    abortController.abort();
+                }
+            }
+
+            // ============================
+            //  11. DOM message helpers
+            // ============================
+            var messageCounter = 0;
+
+            function appendMessage(role, content, returnId) {
+                messageCounter++;
+                var id = 'msg-' + messageCounter;
+
+                var msgDiv = document.createElement('div');
+                msgDiv.className = 'message ' + role;
+                msgDiv.id = id;
+
+                var avatarSvg = '';
+                if (role === 'user') {
+                    avatarSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+                } else {
+                    avatarSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>';
+                }
+
+                var contentHtml = escapeHtml(content).replace(/\n/g, '<br>');
+
+                msgDiv.innerHTML =
+                    '<div class="msg-avatar">' + avatarSvg + '</div>' +
+                    '<div class="msg-content"><div class="msg-bubble">' + contentHtml + '</div></div>';
+
+                messagesContainer.appendChild(msgDiv);
+                messagesContainer.style.display = '';
+
+                if (returnId) {
+                    return id;
+                }
+                return null;
+            }
+
+            function updateMessageContent(id, content) {
+                var msgDiv = document.getElementById(id);
+                if (!msgDiv) return;
+                var bubble = msgDiv.querySelector('.msg-bubble');
+                if (!bubble) return;
+                bubble.innerHTML = escapeHtml(content).replace(/\n/g, '<br>');
+            }
+
+            function appendSystemMessage(text) {
+                var msgDiv = document.createElement('div');
+                msgDiv.className = 'message system';
+                msgDiv.innerHTML = '<div class="msg-content"><div class="msg-bubble">' + escapeHtml(text) + '</div></div>';
+                messagesContainer.appendChild(msgDiv);
+                messagesContainer.style.display = '';
+            }
+
+            function showThinking() {
+                messageCounter++;
+                var id = 'msg-thinking-' + messageCounter;
+                var msgDiv = document.createElement('div');
+                msgDiv.className = 'message assistant';
+                msgDiv.id = id;
+                msgDiv.innerHTML =
+                    '<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>' +
+                    '<div class="msg-content"><div class="msg-bubble thinking-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+                messagesContainer.appendChild(msgDiv);
+                messagesContainer.style.display = '';
+                return id;
+            }
+
+            function removeThinking(id) {
+                var el = document.getElementById(id);
+                if (el) el.remove();
+            }
+
+            function scrollToBottom() {
+                setTimeout(function () {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 50);
+            }
+
+            function getStatusIcon(status) {
+                var icons = {
+                    'running': '[*]',
+                    'success': '[v]',
+                    'error': '[x]',
+                    'miss': '[-]',
+                    'skip': '[-]',
+                    'low_match': '[!]',
+                    'not_implemented': '[!]',
+                };
+                return icons[status] || '[' + status + ']';
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ============================
+            //  11b. Status panel helpers (检索流程面板)
+            // ============================
+            function getStatusStepIconHtml(status) {
+                // running -> 旋转加载圈
+                if (status === 'running') {
+                    return '<span class="icon-spinner"></span>';
+                }
+                // success -> 绿色 ✓
+                if (status === 'success') {
+                    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+                }
+                // error -> 红色 ✗
+                if (status === 'error') {
+                    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+                }
+                // miss -> 黄色 ○
+                if (status === 'miss') {
+                    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="7"/></svg>';
+                }
+                // skip -> 灰色 -
+                if (status === 'skip') {
+                    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="6" y1="12" x2="18" y2="12"/></svg>';
+                }
+                // low_match / not_implemented -> 黄色 !
+                if (status === 'low_match' || status === 'not_implemented') {
+                    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="7" x2="12" y2="14"/><line x1="12" y1="17.5" x2="12" y2="17.5"/></svg>';
+                }
+                return '';
+            }
+
+            function clearStatusPanel() {
+                statusTimeline.innerHTML = '';
+                statusStepMap = {};
+                statusTimeline.style.display = 'none';
+                statusEmpty.style.display = '';
+                var footer = statusPanelContent.querySelector('.status-footer');
+                if (footer) footer.remove();
+            }
+
+            function ensureStatusTimelineVisible() {
+                statusEmpty.style.display = 'none';
+                statusTimeline.style.display = '';
+            }
+
+            function addOrUpdateStatusStep(event) {
+                ensureStatusTimelineVisible();
+                var stepKey = String(event.step);
+                var status = event.status || 'running';
+                var name = event.name || ('步骤 ' + event.step);
+                var detail = event.detail || '';
+
+                var stepEl = statusStepMap[stepKey];
+                if (!stepEl) {
+                    stepEl = document.createElement('div');
+                    stepEl.className = 'status-step ' + status;
+                    stepEl.dataset.step = stepKey;
+                    stepEl.innerHTML =
+                        '<div class="status-step-icon">' + getStatusStepIconHtml(status) + '</div>' +
+                        '<div class="status-step-name"></div>' +
+                        '<div class="status-step-detail"></div>';
+                    statusTimeline.appendChild(stepEl);
+                    statusStepMap[stepKey] = stepEl;
+                } else {
+                    stepEl.className = 'status-step ' + status;
+                }
+
+                var iconEl = stepEl.querySelector('.status-step-icon');
+                if (iconEl) iconEl.innerHTML = getStatusStepIconHtml(status);
+
+                var nameEl = stepEl.querySelector('.status-step-name');
+                if (nameEl) nameEl.textContent = name;
+
+                var detailEl = stepEl.querySelector('.status-step-detail');
+                if (detailEl) detailEl.textContent = detail;
+
+                statusPanelContent.scrollTop = statusPanelContent.scrollHeight;
+            }
+
+            function showStatusFooter(text, kind) {
+                ensureStatusTimelineVisible();
+                var existing = statusPanelContent.querySelector('.status-footer');
+                if (existing) existing.remove();
+                var el = document.createElement('div');
+                el.className = 'status-footer ' + (kind || 'complete');
+                el.textContent = text;
+                statusPanelContent.appendChild(el);
+                statusPanelContent.scrollTop = statusPanelContent.scrollHeight;
+            }
+
+            // ============================
+            //  12. Init
+            // ============================
+            async function init() {
+                try {
+                    var conv = await apiPost('/api/conversations/ensure-empty');
+                    if (conv === null) return;
+                    currentConversationId = conv.id;
+                    await loadConversations();
+                } catch (err) {
+                    console.error('Init failed:', err);
+                }
+            }
+
+            init();
+
+        })();
+    </script>
+</body>
+</html>

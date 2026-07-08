@@ -22,9 +22,18 @@ class BaseConfig:
     HOST = os.getenv("HOST", "0.0.0.0")
     PORT = int(os.getenv("PORT", "8000"))
     
+    # JWT配置
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "rag-system-jwt-secret-key-change-in-production")
+    JWT_ALGORITHM = "HS256"
+    JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "168"))  # 7天
+    
     # AI API配置
     DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
     DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+
+    # 用户上下文配置
+    # 单份简历文档注入大模型system message时的最大字符数（避免token过长）
+    USER_DOC_MAX_CHARS_PER_DOC = int(os.getenv("USER_DOC_MAX_CHARS_PER_DOC", "1000"))
     
     @classmethod
     def validate(cls):
@@ -50,6 +59,8 @@ class BaseConfig:
             "DEBUG": cls.DEBUG,
             "HOST": cls.HOST,
             "PORT": cls.PORT,
+            "JWT_SECRET_KEY": "已配置" if cls.JWT_SECRET_KEY != "rag-system-jwt-secret-key-change-in-production" else "默认密钥(请修改)",
+            "JWT_EXPIRATION_HOURS": cls.JWT_EXPIRATION_HOURS,
             "DASHSCOPE_API_KEY": "已配置" if cls.DASHSCOPE_API_KEY else "未配置",
             "DEEPSEEK_API_KEY": "已配置" if cls.DEEPSEEK_API_KEY else "未配置",
         }
