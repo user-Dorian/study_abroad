@@ -246,38 +246,58 @@ class ConversationRepository:
             if conn:
                 _release_connection(conn)
 
-    def list_conversations(self, user_id: Optional[str] = None) -> list:
+    def list_conversations(
+        self,
+        user_id: Optional[str] = None,
+        dialogue_type: Optional[str] = None,
+        exclude_dialogue_type: Optional[str] = None,
+    ) -> list:
         """
         获取会话列表，按 updated_at 降序排列
 
         Args:
             user_id: 可选的用户ID，用于过滤
+            dialogue_type: 可选，按 dialogue_type 过滤；传 'ai_chat' 时同时匹配 NULL
+                （兼容历史数据 NULL）。常见值：'ai_chat'、'contact_chat'、'stranger_chat'。
+            exclude_dialogue_type: 可选，排除指定 dialogue_type。传 'contact_chat' 时
+                排除人-人对话，只返回 AI/陌生人对话。
 
         Returns:
-            list[dict]: 会话信息列表
+            list[dict]: 会话信息列表（含 dialogue_type 字段，供前端判断页面归属）
         """
         conn = None
         try:
             conn = _get_connection()
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                where_parts = []
+                params: list = []
+
                 if user_id is not None:
-                    cur.execute(
-                        """
-                        SELECT c.id, c.title, c.created_at, c.updated_at
-                        FROM conversations c
-                        WHERE c.user_id = %s
-                        ORDER BY c.updated_at DESC
-                        """,
-                        (user_id,),
-                    )
-                else:
-                    cur.execute(
-                        """
-                        SELECT c.id, c.title, c.created_at, c.updated_at
-                        FROM conversations c
-                        ORDER BY c.updated_at DESC
-                        """
-                    )
+                    where_parts.append("c.user_id = %s")
+                    params.append(user_id)
+
+                if dialogue_type is not None:
+                    if dialogue_type == "ai_chat":
+                        # AI 对话：dialogue_type='ai_chat' 或 NULL（兼容历史数据）
+                        where_parts.append("(c.dialogue_type = %s OR c.dialogue_type IS NULL)")
+                        params.append(dialogue_type)
+                    else:
+                        where_parts.append("c.dialogue_type = %s")
+                        params.append(dialogue_type)
+
+                if exclude_dialogue_type is not None:
+                    where_parts.append("(c.dialogue_type IS NULL OR c.dialogue_type <> %s)")
+                    params.append(exclude_dialogue_type)
+
+                where_clause = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
+                sql = (
+                    "SELECT c.id, c.title, c.dialogue_type, c.user_id, c.other_user_id, "
+                    "       c.created_at, c.updated_at "
+                    f"FROM conversations c {where_clause} "
+                    "ORDER BY c.updated_at DESC"
+                )
+                cur.execute(sql, tuple(params))
                 rows = cur.fetchall()
 
             results = []
@@ -285,11 +305,17 @@ class ConversationRepository:
                 results.append({
                     "id": str(row["id"]),
                     "title": row["title"],
+                    "dialogue_type": row["dialogue_type"],
+                    "user_id": str(row["user_id"]) if row["user_id"] is not None else None,
+                    "other_user_id": str(row["other_user_id"]) if row["other_user_id"] is not None else None,
                     "created_at": _ensure_utc_iso(row["created_at"]),
                     "updated_at": _ensure_utc_iso(row["updated_at"]),
                 })
 
-            logger.debug(f"获取会话列表成功: 共 {len(results)} 条")
+            logger.debug(
+                f"获取会话列表成功: dialogue_type={dialogue_type}, "
+                f"exclude_dialogue_type={exclude_dialogue_type}, 共 {len(results)} 条"
+            )
             return results
 
         except psycopg2.Error as e:
@@ -475,6 +501,7 @@ class MessageRepository:
         role: str,
         content: str,
         metadata: Optional[dict] = None,
+        sender_id: Optional[str] = None,
     ) -> dict:
         """
         保存消息
@@ -484,13 +511,31 @@ class MessageRepository:
             role: 消息角色（如 user / assistant / system）
             content: 消息内容
             metadata: 可选的元数据字典
+            sender_id: 可选的发送者用户ID；不传时按 role 推断：
+                - role='user' → 取 conversations.user_id（AI 对话的用户本人）
+                - role='assistant' / 'system' → NULL（AI 无具体发送人）
 
         Returns:
-            dict: 包含 {id, conversation_id, role, content, metadata, created_at}
+            dict: 包含 {id, conversation_id, role, content, metadata, sender_id, created_at}
         """
         msg_id = str(uuid.uuid4())
         now = datetime.utcnow()
         metadata_json = json.dumps(metadata, ensure_ascii=False) if metadata is not None else None
+
+        # 自动推断 sender_id：role='user' 时取 conversation.user_id
+        if sender_id is None and role == "user":
+            try:
+                with _get_connection() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "SELECT user_id FROM conversations WHERE id = %s",
+                            (conversation_id,),
+                        )
+                        row = cur.fetchone()
+                        if row and row[0]:
+                            sender_id = str(row[0])
+            except Exception as e:
+                logger.warning(f"自动推断 sender_id 失败，继续保存（sender_id 为 NULL）: {e}")
 
         conn = None
         try:
@@ -498,11 +543,11 @@ class MessageRepository:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                     """
-                    INSERT INTO messages (id, conversation_id, role, content, metadata_json, created_at)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id, conversation_id, role, content, metadata_json, created_at
+                    INSERT INTO messages (id, conversation_id, role, content, metadata_json, sender_id, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, conversation_id, role, content, metadata_json, sender_id, created_at
                     """,
-                    (msg_id, conversation_id, role, content, metadata_json, now),
+                    (msg_id, conversation_id, role, content, metadata_json, sender_id, now),
                 )
                 row = cur.fetchone()
             conn.commit()
@@ -522,10 +567,12 @@ class MessageRepository:
                 "role": row["role"],
                 "content": row["content"],
                 "metadata": saved_metadata,
+                "sender_id": str(row["sender_id"]) if row["sender_id"] is not None else None,
                 "created_at": _ensure_utc_iso(row["created_at"]),
             }
             logger.info(
-                f"保存消息成功: id={result['id']}, conversation_id={conversation_id}, role={role}"
+                f"保存消息成功: id={result['id']}, conversation_id={conversation_id}, "
+                f"role={role}, sender_id={result['sender_id']}"
             )
             return result
 
@@ -549,7 +596,7 @@ class MessageRepository:
             limit: 最大返回条数，默认 50
 
         Returns:
-            list[dict]: 消息列表
+            list[dict]: 消息列表（含 sender_id 字段，用于前端区分说话人）
         """
         conn = None
         try:
@@ -557,7 +604,8 @@ class MessageRepository:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                     """
-                    SELECT id, conversation_id, role, content, metadata_json, created_at
+                    SELECT id, conversation_id, role, content, metadata_json,
+                           sender_type, sender_id, created_at
                     FROM messages
                     WHERE conversation_id = %s
                     ORDER BY created_at ASC
@@ -582,6 +630,8 @@ class MessageRepository:
                     "role": row["role"],
                     "content": row["content"],
                     "metadata": msg_metadata,
+                    "sender_type": row["sender_type"],
+                    "sender_id": str(row["sender_id"]) if row["sender_id"] is not None else None,
                     "created_at": _ensure_utc_iso(row["created_at"]),
                 })
 
@@ -610,7 +660,7 @@ class MessageRepository:
             limit: 获取条数
 
         Returns:
-            list[dict]: 消息列表（按时间升序）
+            list[dict]: 消息列表（按时间升序，含 sender_id 字段）
         """
         conn = None
         try:
@@ -618,9 +668,11 @@ class MessageRepository:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                     """
-                    SELECT id, conversation_id, role, content, metadata_json, created_at
+                    SELECT id, conversation_id, role, content, metadata_json,
+                           sender_type, sender_id, created_at
                     FROM (
-                        SELECT id, conversation_id, role, content, metadata_json, created_at
+                        SELECT id, conversation_id, role, content, metadata_json,
+                               sender_type, sender_id, created_at
                         FROM messages
                         WHERE conversation_id = %s
                         ORDER BY created_at DESC
@@ -647,6 +699,8 @@ class MessageRepository:
                     "role": row["role"],
                     "content": row["content"],
                     "metadata": msg_metadata,
+                    "sender_type": row["sender_type"],
+                    "sender_id": str(row["sender_id"]) if row["sender_id"] is not None else None,
                     "created_at": _ensure_utc_iso(row["created_at"]),
                 })
 
@@ -847,40 +901,73 @@ class AsyncConversationRepository:
             logger.error(f"获取会话失败: id={conversation_id}, error={e}")
             raise
 
-    async def list_conversations(self, user_id: Optional[str] = None) -> list:
+    async def list_conversations(
+        self,
+        user_id: Optional[str] = None,
+        dialogue_type: Optional[str] = None,
+        exclude_dialogue_type: Optional[str] = None,
+    ) -> list:
         """获取会话列表，按 updated_at 降序排列
 
         Args:
             user_id: 可选的用户ID，用于过滤
+            dialogue_type: 可选，按 dialogue_type 过滤；传 'ai_chat' 时同时匹配 NULL
+                （兼容历史数据 NULL）。常见值：'ai_chat'、'contact_chat'、'stranger_chat'。
+            exclude_dialogue_type: 可选，排除指定 dialogue_type。传 'contact_chat' 时
+                排除人-人对话，只返回 AI/陌生人对话。
 
         Returns:
-            list[dict]: 会话信息列表
+            list[dict]: 会话信息列表（含 dialogue_type 字段，供前端判断页面归属）
         """
         try:
+            where_parts = []
+            params: list = []
+
             if user_id is not None:
-                sql = (
-                    "SELECT c.id, c.title, c.created_at, c.updated_at "
-                    "FROM conversations c WHERE c.user_id = $1 "
-                    "ORDER BY c.updated_at DESC"
+                where_parts.append(f"c.user_id = ${len(params) + 1}")
+                params.append(user_id)
+
+            if dialogue_type is not None:
+                if dialogue_type == "ai_chat":
+                    where_parts.append(
+                        f"(c.dialogue_type = ${len(params) + 1} OR c.dialogue_type IS NULL)"
+                    )
+                else:
+                    where_parts.append(f"c.dialogue_type = ${len(params) + 1}")
+                params.append(dialogue_type)
+
+            if exclude_dialogue_type is not None:
+                where_parts.append(
+                    f"(c.dialogue_type IS NULL OR c.dialogue_type <> ${len(params) + 1})"
                 )
-                rows = await AsyncDatabasePool.execute_query(sql, user_id)
-            else:
-                sql = (
-                    "SELECT c.id, c.title, c.created_at, c.updated_at "
-                    "FROM conversations c ORDER BY c.updated_at DESC"
-                )
-                rows = await AsyncDatabasePool.execute_query(sql)
+                params.append(exclude_dialogue_type)
+
+            where_clause = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
+            sql = (
+                "SELECT c.id, c.title, c.dialogue_type, c.user_id, c.other_user_id, "
+                "       c.created_at, c.updated_at "
+                f"FROM conversations c {where_clause} "
+                "ORDER BY c.updated_at DESC"
+            )
+            rows = await AsyncDatabasePool.execute_query(sql, *params)
 
             results = [
                 {
                     "id": str(row["id"]),
                     "title": row["title"],
+                    "dialogue_type": row["dialogue_type"],
+                    "user_id": str(row["user_id"]) if row["user_id"] is not None else None,
+                    "other_user_id": str(row["other_user_id"]) if row["other_user_id"] is not None else None,
                     "created_at": _ensure_utc_iso(row["created_at"]),
                     "updated_at": _ensure_utc_iso(row["updated_at"]),
                 }
                 for row in rows
             ]
-            logger.debug(f"获取会话列表成功: 共 {len(results)} 条")
+            logger.debug(
+                f"获取会话列表成功: dialogue_type={dialogue_type}, "
+                f"exclude_dialogue_type={exclude_dialogue_type}, 共 {len(results)} 条"
+            )
             return results
 
         except Exception as e:
@@ -1027,6 +1114,7 @@ class AsyncMessageRepository:
         role: str,
         content: str,
         metadata: Optional[dict] = None,
+        sender_id: Optional[str] = None,
     ) -> dict:
         """保存消息
 
@@ -1035,22 +1123,38 @@ class AsyncMessageRepository:
             role: 消息角色（如 user / assistant / system）
             content: 消息内容
             metadata: 可选的元数据字典
+            sender_id: 可选的发送者用户ID；不传时按 role 推断：
+                - role='user' → 取 conversations.user_id（AI 对话的用户本人）
+                - role='assistant' / 'system' → NULL（AI 无具体发送人）
 
         Returns:
-            dict: 包含 {id, conversation_id, role, content, metadata, created_at}
+            dict: 包含 {id, conversation_id, role, content, metadata, sender_id, created_at}
         """
         msg_id = str(uuid.uuid4())
         now = datetime.utcnow()
         # JSONB 字段传 json 字符串（与 psycopg2 一致）
         metadata_json = json.dumps(metadata, ensure_ascii=False) if metadata is not None else None
+
+        # 自动推断 sender_id：role='user' 时取 conversation.user_id
+        if sender_id is None and role == "user":
+            try:
+                conv_row = await AsyncDatabasePool.execute_one(
+                    "SELECT user_id FROM conversations WHERE id = $1",
+                    conversation_id,
+                )
+                if conv_row and conv_row.get("user_id"):
+                    sender_id = str(conv_row["user_id"])
+            except Exception as e:
+                logger.warning(f"自动推断 sender_id 失败，继续保存（sender_id 为 NULL）: {e}")
+
         try:
             sql = (
-                "INSERT INTO messages (id, conversation_id, role, content, metadata_json, created_at) "
-                "VALUES ($1, $2, $3, $4, $5, $6) "
-                "RETURNING id, conversation_id, role, content, metadata_json, created_at"
+                "INSERT INTO messages (id, conversation_id, role, content, metadata_json, sender_id, created_at) "
+                "VALUES ($1, $2, $3, $4, $5, $6, $7) "
+                "RETURNING id, conversation_id, role, content, metadata_json, sender_id, created_at"
             )
             row = await AsyncDatabasePool.execute_one(
-                sql, msg_id, conversation_id, role, content, metadata_json, now
+                sql, msg_id, conversation_id, role, content, metadata_json, sender_id, now
             )
 
             result = {
@@ -1059,10 +1163,12 @@ class AsyncMessageRepository:
                 "role": row["role"],
                 "content": row["content"],
                 "metadata": _parse_metadata(row["metadata_json"]),
+                "sender_id": str(row["sender_id"]) if row["sender_id"] is not None else None,
                 "created_at": _ensure_utc_iso(row["created_at"]),
             }
             logger.info(
-                f"保存消息成功: id={result['id']}, conversation_id={conversation_id}, role={role}"
+                f"保存消息成功: id={result['id']}, conversation_id={conversation_id}, "
+                f"role={role}, sender_id={result['sender_id']}"
             )
             return result
 
@@ -1080,11 +1186,12 @@ class AsyncMessageRepository:
             limit: 最大返回条数，默认 50
 
         Returns:
-            list[dict]: 消息列表
+            list[dict]: 消息列表（含 sender_id 字段，用于前端区分说话人）
         """
         try:
             sql = (
-                "SELECT id, conversation_id, role, content, metadata_json, created_at "
+                "SELECT id, conversation_id, role, content, metadata_json, "
+                "       sender_type, sender_id, created_at "
                 "FROM messages WHERE conversation_id = $1 "
                 "ORDER BY created_at ASC LIMIT $2"
             )
@@ -1097,6 +1204,8 @@ class AsyncMessageRepository:
                     "role": row["role"],
                     "content": row["content"],
                     "metadata": _parse_metadata(row["metadata_json"]),
+                    "sender_type": row["sender_type"],
+                    "sender_id": str(row["sender_id"]) if row["sender_id"] is not None else None,
                     "created_at": _ensure_utc_iso(row["created_at"]),
                 }
                 for row in rows
@@ -1122,12 +1231,14 @@ class AsyncMessageRepository:
             limit: 获取条数
 
         Returns:
-            list[dict]: 消息列表（按时间升序）
+            list[dict]: 消息列表（按时间升序，含 sender_id 字段）
         """
         try:
             sql = (
-                "SELECT id, conversation_id, role, content, metadata_json, created_at FROM ("
-                "  SELECT id, conversation_id, role, content, metadata_json, created_at "
+                "SELECT id, conversation_id, role, content, metadata_json, "
+                "       sender_type, sender_id, created_at FROM ("
+                "  SELECT id, conversation_id, role, content, metadata_json, "
+                "         sender_type, sender_id, created_at "
                 "  FROM messages WHERE conversation_id = $1 "
                 "  ORDER BY created_at DESC LIMIT $2"
                 ") sub ORDER BY sub.created_at ASC"
@@ -1141,6 +1252,8 @@ class AsyncMessageRepository:
                     "role": row["role"],
                     "content": row["content"],
                     "metadata": _parse_metadata(row["metadata_json"]),
+                    "sender_type": row["sender_type"],
+                    "sender_id": str(row["sender_id"]) if row["sender_id"] is not None else None,
                     "created_at": _ensure_utc_iso(row["created_at"]),
                 }
                 for row in rows

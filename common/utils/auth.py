@@ -108,11 +108,13 @@ async def get_current_user(
 
     # 检查 payload 是否包含必要字段
     user_id = payload.get("user_id")
-    username = payload.get("username")
+    # 兼容两种字段名：部分路由使用 "sub" 字段存储用户名（如规划师端）
+    username = payload.get("username") or payload.get("sub")
+    role = payload.get("role", "client")
     if user_id is None or username is None:
         return None
 
-    return {"user_id": user_id, "username": username}
+    return {"user_id": user_id, "username": username, "role": role}
 
 
 async def require_user(
@@ -138,4 +140,19 @@ async def require_user(
             detail="未认证，请先登录",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # 每次API请求都刷新用户在线状态（关键：支持自动登录用户）
+    user_id = current_user.get("user_id") or current_user.get("id")
+    if user_id:
+        try:
+            from common.utils.online_status import mark_online
+            result = await mark_online(str(user_id))
+            # 诊断日志：确认mark_online被调用
+            import logging
+            logging.getLogger(__name__).info(f"[在线状态] require_user刷新在线状态: user_id={user_id}, result={result}")
+        except Exception as e:
+            # 记录错误但不要静默吞掉
+            import logging
+            logging.getLogger(__name__).warning(f"[在线状态] require_user刷新失败: user_id={user_id}, error={e}")
+
     return current_user

@@ -5,7 +5,7 @@ from common.config.base_settings import BaseConfig, DevelopmentConfig, Productio
 class ClientConfig(BaseConfig):
     """客户端配置"""
     APP_NAME = "留学通"
-    PORT = 8000
+    PORT = 8002
 
 
 class ClientDevelopmentConfig(ClientConfig, DevelopmentConfig):

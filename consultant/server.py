@@ -51,6 +51,12 @@ from consultant.api.status_routes import router as status_router
 from consultant.api.quota_routes import router as quota_router
 from consultant.config.settings import ConsultantConfig
 from common.utils.logger import logger
+from common.friendship.routes import router as friendship_router
+from common.contact_chat.routes import router as contact_chat_router
+from common.contact_chat.websocket_routes import router as websocket_router
+from common.unread_messages.routes import router as unread_messages_router
+from common.account.routes import router as account_router
+from common.profile.routes import router as profile_router
 
 # 会话管理模块（可选导入）
 conversation_router = None
@@ -70,6 +76,16 @@ app.include_router(status_router, prefix="")
 app.include_router(quota_router, prefix="")
 if conversation_router:
     app.include_router(conversation_router, prefix="")
+app.include_router(friendship_router)
+app.include_router(contact_chat_router)
+app.include_router(unread_messages_router)
+app.include_router(account_router)
+app.include_router(profile_router)
+
+# WebSocket路由必须在静态文件挂载之前直接注册，避免被mount覆盖
+# 直接注册WebSocket端点，确保/ws路径优先匹配
+from common.contact_chat.websocket_routes import websocket_chat_endpoint
+app.websocket("/ws/chat/{user_id}")(websocket_chat_endpoint)
 
 # 静态文件目录
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")

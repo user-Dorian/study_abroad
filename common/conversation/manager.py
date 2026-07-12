@@ -84,19 +84,35 @@ class ConversationManager:
             logger.error(f"获取会话失败: id={conversation_id}, error={e}")
             raise
     
-    def list_conversations(self, user_id: Optional[str] = None) -> list:
+    def list_conversations(
+        self,
+        user_id: Optional[str] = None,
+        dialogue_type: Optional[str] = None,
+        exclude_dialogue_type: Optional[str] = None,
+    ) -> list:
         """
         获取所有会话列表，按 updated_at 降序排列
 
         Args:
             user_id: 可选的用户ID
+            dialogue_type: 可选，按 dialogue_type 过滤；传 'ai_chat' 时同时匹配 NULL
+                （兼容历史数据 NULL）。常见值：'ai_chat'、'contact_chat'。
+            exclude_dialogue_type: 可选，排除指定 dialogue_type。传 'contact_chat' 时
+                排除人-人对话，只返回 AI 对话。
 
         Returns:
             list[dict]: 会话信息列表
         """
         try:
-            result = self._conv_repo.list_conversations(user_id=user_id)
-            logger.debug(f"获取会话列表成功: 共 {len(result)} 条")
+            result = self._conv_repo.list_conversations(
+                user_id=user_id,
+                dialogue_type=dialogue_type,
+                exclude_dialogue_type=exclude_dialogue_type,
+            )
+            logger.debug(
+                f"获取会话列表成功: dialogue_type={dialogue_type}, "
+                f"exclude_dialogue_type={exclude_dialogue_type}, 共 {len(result)} 条"
+            )
             return result
 
         except Exception as e:
@@ -572,10 +588,26 @@ class ConversationManager:
         async_conv_repo, _ = self._get_async_repos()
         return await async_conv_repo.get_conversation(conversation_id, user_id=user_id)
 
-    async def async_list_conversations(self, user_id: Optional[str] = None) -> list:
-        """异步获取会话列表"""
+    async def async_list_conversations(
+        self,
+        user_id: Optional[str] = None,
+        dialogue_type: Optional[str] = None,
+        exclude_dialogue_type: Optional[str] = None,
+    ) -> list:
+        """异步获取会话列表，按 updated_at 降序排列
+
+        Args:
+            user_id: 可选的用户ID
+            dialogue_type: 可选，按 dialogue_type 过滤；传 'ai_chat' 时同时匹配 NULL
+                （兼容历史数据 NULL）。
+            exclude_dialogue_type: 可选，排除指定 dialogue_type。
+        """
         async_conv_repo, _ = self._get_async_repos()
-        return await async_conv_repo.list_conversations(user_id=user_id)
+        return await async_conv_repo.list_conversations(
+            user_id=user_id,
+            dialogue_type=dialogue_type,
+            exclude_dialogue_type=exclude_dialogue_type,
+        )
 
     async def async_find_empty_conversation(self, user_id: str) -> Optional[dict]:
         """异步查找用户的空对话"""

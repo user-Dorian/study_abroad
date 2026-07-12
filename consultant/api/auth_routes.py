@@ -78,7 +78,7 @@ def _create_enterprise_users_table_if_not_exists():
             conn.close()
 
 
-def _get_current_user_from_header(
+async def _get_current_user_from_header(
     authorization: str = FastAPIHeader(None, description="Bearer token")
 ):
     """从请求头获取当前用户（用于需要认证的接口）"""
@@ -98,11 +98,22 @@ def _get_current_user_from_header(
         payload = decode_access_token(token, ConsultantConfig.JWT_SECRET_KEY, ConsultantConfig.JWT_ALGORITHM)
         if payload is None:
             raise HTTPException(status_code=401, detail="无效的认证令牌")
-        return {
+
+        user_info = {
             "user_id": payload.get("user_id"),
             "username": payload.get("sub"),
             "role": payload.get("role", "client"),
         }
+
+        # 每次API请求都刷新用户在线状态（关键：支持自动登录用户）
+        try:
+            from common.utils.online_status import mark_online
+            if user_info.get("user_id"):
+                await mark_online(str(user_info["user_id"]))
+        except Exception:
+            pass  # 在线状态刷新失败不影响正常请求
+
+        return user_info
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"认证失败: {str(e)}")
 
@@ -228,6 +239,13 @@ async def login(request: LoginRequest):
             algorithm=ConsultantConfig.JWT_ALGORITHM,
             expires_hours=ConsultantConfig.JWT_EXPIRATION_HOURS,
         )
+
+        # 标记用户在线
+        try:
+            from common.utils.online_status import mark_online
+            await mark_online(str(user_id))
+        except Exception as e:
+            logger.warning(f"标记在线状态失败: {e}")
 
         logger.info(f"[规划师端] 用户登录: {username} (role={role})")
         return {

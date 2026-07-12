@@ -181,6 +181,35 @@
             color: #6b7280;
         }
 
+        .user-dropdown .dropdown-group-label {
+            padding: 6px 14px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .user-dropdown .dropdown-submenu {
+            display: none;
+            padding-left: 0;
+        }
+        .user-dropdown .dropdown-submenu.open {
+            display: block;
+        }
+        .user-dropdown .dropdown-item.has-submenu {
+            position: relative;
+        }
+        .user-dropdown .dropdown-item.has-submenu::after {
+            content: '▸';
+            position: absolute;
+            right: 12px;
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+        .user-dropdown .dropdown-item.has-submenu.open::after {
+            transform: rotate(90deg);
+        }
+
         /* ===== Main Content ===== */
         .main {
             display: flex;
@@ -196,13 +225,23 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* 侧边栏收起状态 */
+        .sidebar.collapsed {
+            flex: 0 0 0;
+            min-width: 0;
+            width: 0;
+            border-right: none;
+            overflow: hidden;
         }
 
         .sidebar-header {
             padding: 16px 16px 12px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 10px;
             border-bottom: 1px solid #f3f4f6;
         }
 
@@ -210,6 +249,116 @@
             font-size: 15px;
             font-weight: 600;
             color: #374151;
+        }
+
+        /* Tab切换按钮组 */
+        .sidebar-tabs {
+            display: flex;
+            gap: 4px;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .sidebar-tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .sidebar-tab-btn:hover {
+            background: rgba(57, 73, 171, 0.08);
+            color: #3949ab;
+        }
+
+        .sidebar-tab-btn.active {
+            background: #3949ab;
+            color: white;
+        }
+
+        /* Tab内容区域 */
+        .sidebar-tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .sidebar-tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 收起按钮（整合在Tab组内） */
+        .sidebar-collapse-btn {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            margin-left: auto;
+            min-width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-collapse-btn:hover {
+            background: #f3f4f6;
+            color: #3949ab;
+        }
+
+        /* 收起状态下隐藏收起按钮 */
+        .sidebar.collapsed .sidebar-collapse-btn {
+            display: none !important;
+        }
+
+        /* 展开按钮（侧边栏收起时显示） */
+        .sidebar-expand-btn {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 60px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            color: #6b7280;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 998;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-expand-btn:hover {
+            background: #eef2ff;
+            color: #3949ab;
+            border-color: #c7d2fe;
+        }
+
+        /* 侧边栏收起时显示展开按钮 */
+        .sidebar.collapsed + .sidebar-expand-btn {
+            display: flex;
         }
 
         .sidebar-header .new-chat-btn {
@@ -223,29 +372,22 @@
             align-items: center;
             justify-content: center;
             transition: all 0.15s ease;
+            font-size: 18px;
+            line-height: 1;
+            color: #6b7280;
         }
 
         .sidebar-header .new-chat-btn:hover {
             background: #eef2ff;
             border-color: #c7d2fe;
-        }
-
-        .sidebar-header .new-chat-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: none;
-            stroke: #6b7280;
-            stroke-width: 2;
-        }
-
-        .sidebar-header .new-chat-btn:hover svg {
-            stroke: #3949ab;
+            color: #3949ab;
         }
 
         .conversation-list {
-            flex: 1;
             overflow-y: auto;
-            padding: 8px 8px 12px;
+            padding: 8px 8px 4px;
+            flex-shrink: 0;
+            max-height: 40%;
         }
 
         .conversation-item {
@@ -331,12 +473,130 @@
             stroke-width: 2;
         }
 
-        .sidebar-footer {
-            padding: 12px 16px;
-            border-top: 1px solid #f3f4f6;
-            font-size: 12px;
+        /* ===== Sidebar Dual-Pane ===== */
+        .sidebar-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 4px 10px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-section-header {
+            padding: 10px 16px 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #6b7280;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 联系人区域头部的按钮样式 */
+        .sidebar-section-header .new-chat-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            font-size: 18px;
+            line-height: 1;
+            color: #6b7280;
+        }
+
+        .sidebar-section-header .new-chat-btn:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            color: #3949ab;
+        }
+
+        .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 8px;
+        }
+
+        /* Contact item card */
+        .contacts-list .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .contacts-list .contact-item:hover {
+            background: #f3f4f6;
+        }
+
+        .contacts-list .contact-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #3949ab;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .contacts-list .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .contacts-list .contact-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contacts-list .contact-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .contacts-list .contact-online {
+            font-size: 0.7rem;
+        }
+
+        .contacts-list .contact-online.online {
+            color: #22c55e;
+        }
+
+        .contacts-list .contact-online.offline {
             color: #9ca3af;
+        }
+
+        .contacts-list .contact-last-msg {
+            font-size: 0.78rem;
+            color: #6b7280;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+
+        .contacts-empty {
             text-align: center;
+            padding: 20px;
+            color: #9ca3af;
+            font-size: 0.85rem;
         }
 
         /* ===== Chat Area ===== */
@@ -346,6 +606,17 @@
             flex-direction: column;
             background: #f9fafb;
             overflow: hidden;
+        }
+
+        /* ===== AI Chat Panel ===== */
+        .ai-chat-panel {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        .ai-chat-panel.active {
+            display: flex;
         }
 
         .chat-header {
@@ -661,6 +932,165 @@
             fill: none;
             stroke: currentColor;
             stroke-width: 2;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
+        }
+
+        /* ===== Contact Chat Panel (内嵌面板) ===== */
+        .contact-chat-panel {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+        .contact-chat-panel.active {
+            display: flex;
+        }
+        .contact-chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+        .back-to-ai-btn {
+            padding: 8px 16px;
+            background: #f9fafb;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .back-to-ai-btn:hover {
+            background: #eef2ff;
+            color: #3949ab;
+            border-color: #c7d2fe;
+        }
+        .contact-chat-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        .contact-chat-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .contact-chat-status {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .contact-chat-status.online {
+            color: #10b981;
+        }
+        .contact-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .contact-chat-messages .message {
+            max-width: 85%;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            animation: messageIn 0.3s ease;
+        }
+        .contact-chat-messages .message.sent {
+            align-self: flex-end;
+        }
+        .contact-chat-messages .message.received {
+            align-self: flex-start;
+        }
+        .contact-chat-messages .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .contact-chat-messages .message.sent .msg-bubble {
+            background: #3949ab;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .contact-chat-messages .message.received .msg-bubble {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            border-bottom-left-radius: 4px;
+        }
+        .contact-chat-messages .msg-time {
+            font-size: 0.72rem;
+            color: #9ca3af;
+            padding: 0 4px;
+        }
+        .contact-chat-messages .message.sent .msg-time {
+            text-align: right;
+        }
+        .contact-chat-messages .chat-empty,
+        .contact-chat-messages .loading,
+        .contact-chat-messages .chat-error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        .contact-chat-input-area {
+            flex-shrink: 0;
+            padding: 16px 24px 20px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+        }
+        .contact-chat-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .contact-chat-input-wrapper textarea {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            min-height: 36px;
+            max-height: 120px;
+            line-height: 1.5;
+        }
+        .contact-chat-input-wrapper textarea:focus {
+            border-color: #3949ab;
+            box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.10);
+        }
+        .contact-chat-input-wrapper button {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #1a237e, #3949ab);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .contact-chat-input-wrapper button:hover {
+            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.30);
+            transform: translateY(-1px);
         }
 
         .input-hint {
@@ -1021,23 +1451,27 @@
 
         /* ===== Scrollbar ===== */
         .conversation-list::-webkit-scrollbar,
-        .messages-container::-webkit-scrollbar {
+        .messages-container::-webkit-scrollbar,
+        .contacts-list::-webkit-scrollbar {
             width: 5px;
         }
 
         .conversation-list::-webkit-scrollbar-track,
-        .messages-container::-webkit-scrollbar-track {
+        .messages-container::-webkit-scrollbar-track,
+        .contacts-list::-webkit-scrollbar-track {
             background: transparent;
         }
 
         .conversation-list::-webkit-scrollbar-thumb,
-        .messages-container::-webkit-scrollbar-thumb {
+        .messages-container::-webkit-scrollbar-thumb,
+        .contacts-list::-webkit-scrollbar-thumb {
             background: #d1d5db;
             border-radius: 3px;
         }
 
         .conversation-list::-webkit-scrollbar-thumb:hover,
-        .messages-container::-webkit-scrollbar-thumb:hover {
+        .messages-container::-webkit-scrollbar-thumb:hover,
+        .contacts-list::-webkit-scrollbar-thumb:hover {
             background: #9ca3af;
         }
 
@@ -1096,6 +1530,443 @@
                 display: none;
             }
         }
+
+        /* ===== Chat Header Contact Info ===== */
+        .chat-header-sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-header-sub .online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            display: inline-block;
+        }
+
+        .chat-header-sub .online-dot.online {
+            background: #10b981;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ===== Contact Search Modal ===== */
+        .search-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-modal.active {
+            display: flex;
+        }
+
+        .search-modal .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3000;
+        }
+
+        .search-modal .c-modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: cSlideIn 0.3s ease;
+            position: relative;
+            z-index: 3001;
+        }
+
+        .c-modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .c-modal-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .c-modal-close {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            color: #6b7280;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .c-modal-close:hover {
+            background: #f3f4f6;
+        }
+
+        .c-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            border-color: #3949ab;
+        }
+
+        .search-box button {
+            padding: 10px 20px;
+            background: #3949ab;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .search-box button:hover {
+            opacity: 0.9;
+        }
+
+        .user-search-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .user-search-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .user-role-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .user-role-badge.consultant {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .user-role-badge.client {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .u-action-btn {
+            padding: 6px 14px;
+            background: #3949ab;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-family: inherit;
+        }
+
+        .u-action-btn:hover {
+            opacity: 0.9;
+        }
+
+        @keyframes cSlideIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ===== Toast ===== */
+        .contact-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 5000;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            animation: fadeIn 0.2s ease;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* ======== 联系人聊天消息左右布局 + 头像（任务B） ======== */
+        .contact-chat-messages .message.sent {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+        .contact-chat-messages .message.received {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+        .contact-chat-messages .message .msg-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            max-width: 100%;
+        }
+        .contact-chat-messages .message.sent .msg-row {
+            flex-direction: row-reverse;
+        }
+        .contact-chat-messages .message .msg-avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+            background: #1a237e;
+        }
+        .contact-chat-messages .message.sent .msg-avatar-circle {
+            background: #1a237e;
+        }
+        .contact-chat-messages .message.received .msg-avatar-circle {
+            background: #6b7280;
+        }
+        .contact-chat-messages .message .msg-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 100%;
+        }
+        .contact-chat-messages .message.sent .msg-stack {
+            align-items: flex-end;
+        }
+        .contact-chat-messages .message.received .msg-stack {
+            align-items: flex-start;
+        }
+        .contact-chat-messages .message .sender-label {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin: 0 4px;
+        }
+        .contact-chat-messages .message.sent .sender-label {
+            text-align: right;
+        }
+        .contact-chat-messages .message.received .sender-label {
+            text-align: left;
+        }
+        /* AI 专属消息样式（任务B-2） */
+        .contact-chat-messages .message.ai-msg {
+            align-self: center;
+            max-width: 90%;
+        }
+        .contact-chat-messages .message.ai-msg .msg-row {
+            justify-content: center;
+        }
+        .contact-chat-messages .message.ai-msg .msg-avatar-circle {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        }
+        .contact-chat-messages .message.ai-msg .msg-bubble {
+            background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+            color: #4c1d95;
+            border: 1px solid #ddd6fe;
+        }
+        .contact-chat-messages .message.ai-msg .ai-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: #6d28d9;
+            background: rgba(139, 92, 246, 0.12);
+            padding: 1px 6px;
+            border-radius: 6px;
+            margin-right: 4px;
+            font-weight: 600;
+        }
+
+        /* 联系人聊天面板：顶部工具栏（视频/语音占位） */
+        .contact-chat-header .contact-chat-toolbar {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+        .contact-chat-header .contact-tool-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        .contact-chat-header .contact-tool-btn:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            color: #3949ab;
+        }
+
+        /* 联系人项：未读数字徽章 */
+        .contacts-list .contact-item .unread-badge {
+            display: none;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: #ef4444;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 18px;
+            text-align: center;
+            margin-left: 6px;
+            flex-shrink: 0;
+        }
+        .contacts-list .contact-item.has-unread .unread-badge {
+            display: inline-block;
+        }
+        .contacts-list .contact-item.has-unread .contact-name {
+            color: #1f2937;
+            font-weight: 700;
+        }
+        /* 兼容旧版红点样式 */
+        .contacts-list .contact-item .unread-dot {
+            display: none;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-left: 6px;
+            flex-shrink: 0;
+        }
+
+        /* ======== AI 聊天面板消息左右布局（任务E） ======== */
+        /* 兼容旧 .message.user / .message.assistant / .message.system，同时支持 .message.sent / .received / .ai-msg */
+        .messages-container .message.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .messages-container .message.received {
+            align-self: flex-start;
+        }
+        .messages-container .message.ai-msg {
+            align-self: center;
+            max-width: 92%;
+        }
+        .messages-container .message .msg-avatar-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+        .messages-container .message.sent .msg-avatar-circle {
+            background: #1a237e;
+        }
+        .messages-container .message.received .msg-avatar-circle {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+        .messages-container .message.ai-msg .msg-avatar-circle {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+        }
+        .messages-container .message .msg-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 100%;
+        }
+        .messages-container .message.sent .msg-stack {
+            align-items: flex-end;
+        }
+        .messages-container .message.received .msg-stack {
+            align-items: flex-start;
+        }
+        .messages-container .message .sender-label {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin: 0 4px;
+        }
+        .messages-container .message.sent .sender-label {
+            text-align: right;
+        }
+        .messages-container .message.received .sender-label {
+            text-align: left;
+        }
+        .messages-container .message.ai-msg .msg-bubble {
+            background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+            color: #4c1d95;
+            border: 1px solid #ddd6fe;
+        }
+        .messages-container .message.ai-msg .ai-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: #6d28d9;
+            background: rgba(139, 92, 246, 0.12);
+            padding: 1px 6px;
+            border-radius: 6px;
+            margin-right: 4px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -1122,6 +1993,35 @@
                 <div class="user-dropdown" id="userDropdown">
                     <div class="user-info-item" id="dropdownUsername"></div>
                     <div class="dropdown-divider"></div>
+
+                    <!-- 分组1: 个人资料 -->
+                    <button class="dropdown-item" id="profileBtn" title="个人资料">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        个人资料
+                    </button>
+
+                    <div class="dropdown-divider"></div>
+
+                    <!-- 分组2: 账号与安全 -->
+                    <div class="dropdown-group-label">账号与安全</div>
+                    <button class="dropdown-item has-submenu" id="accountSafetyToggle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        账号与安全
+                    </button>
+                    <div class="dropdown-submenu" id="accountSafetySubmenu">
+                        <button class="dropdown-item" id="phoneBindBtn" title="绑定手机号">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+                            绑定手机号
+                        </button>
+                        <button class="dropdown-item" id="accountCancelBtn" title="注销账户">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+                            注销账户
+                        </button>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <!-- 分组3: 退出登录 -->
                     <button class="dropdown-item danger" id="logoutBtn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -1136,47 +2036,95 @@
 
         <!-- ===== Main ===== -->
         <div class="main">
-            <!-- ===== Sidebar ===== -->
+            <!-- ===== Sidebar (Tab切换模式) ===== -->
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
-                    <h3>对话列表</h3>
-                    <button class="new-chat-btn" id="newChatBtn" title="新建对话">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"/>
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                    </button>
+                    <!-- Tab切换按钮组 + 收起按钮 -->
+                    <div class="sidebar-tabs">
+                        <button class="sidebar-tab-btn active" onclick="switchSidebarTab('ai')" id="aiChatTabBtn">
+                            <span>💬</span>
+                            <span>AI对话</span>
+                        </button>
+                        <button class="sidebar-tab-btn" onclick="switchSidebarTab('contact')" id="contactTabBtn">
+                            <span>👥</span>
+                            <span>联系人</span>
+                        </button>
+                        <button class="sidebar-collapse-btn" onclick="toggleSidebar()" title="收起侧边栏">◀</button>
+                    </div>
                 </div>
-                <div class="conversation-list" id="conversationList">
-                    <!-- conversation items rendered by JS -->
+
+                <!-- AI对话Tab内容 -->
+                <div class="sidebar-tab-content active" id="aiChatTabContent">
+                    <div class="sidebar-section-header" style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;">
+                        <span>💬 AI对话</span>
+                        <button class="new-chat-btn" id="newChatBtn" title="新建对话">+</button>
+                    </div>
+                    <div class="conversation-list" id="conversationList" style="flex:1;overflow-y:auto;">
+                        <!-- 由JavaScript动态渲染的AI对话列表 -->
+                    </div>
                 </div>
-                <div class="sidebar-footer">
-                    企业留学通 v1.0
+
+                <!-- 联系人Tab内容 -->
+                <div class="sidebar-tab-content" id="contactTabContent">
+                    <div class="sidebar-section-header" style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;">
+                        <span>👥 联系人</span>
+                        <button class="new-chat-btn" onclick="openContactSearch()" title="搜索添加联系人">+</button>
+                    </div>
+                    <div class="contacts-list" id="contactsList" style="flex:1;overflow-y:auto;">
+                        <!-- 联系人列表渲染位置 -->
+                    </div>
                 </div>
             </aside>
 
+            <!-- 展开按钮（侧边栏收起时显示） -->
+            <button class="sidebar-expand-btn" id="sidebarExpandBtn" onclick="toggleSidebar()" title="展开侧边栏">☰</button>
+
             <!-- ===== Chat Area ===== -->
             <section class="chat-area">
-                <div class="chat-header">
-                    <h2 id="chatTitle">新对话</h2>
-                    <p id="chatDesc">企业智能留学咨询助手，为您提供专业解答</p>
-                </div>
-
-                <div class="messages-container" id="messagesContainer">
-                    <!-- messages rendered by JS -->
-                </div>
-
-                <div class="input-area">
-                    <div class="input-wrapper">
-                        <textarea id="messageInput" rows="1" placeholder="输入您的问题..." maxlength="2000"></textarea>
-                        <button class="send-btn" id="sendBtn" disabled>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="22" y1="2" x2="11" y2="13"/>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                            </svg>
-                        </button>
+                <!-- AI对话面板 -->
+                <div class="ai-chat-panel" id="aiChatPanel">
+                    <div class="chat-header">
+                        <h2 id="chatTitle">新对话</h2>
+                        <p id="chatDesc">企业智能留学咨询助手，为您提供专业解答</p>
                     </div>
-                    <div class="input-hint">按 Enter 发送，Shift + Enter 换行</div>
+
+                    <div class="messages-container" id="messagesContainer">
+                        <!-- messages rendered by JS -->
+                    </div>
+
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea id="messageInput" rows="1" placeholder="输入您的问题..." maxlength="2000"></textarea>
+                            <button class="send-btn" id="sendBtn" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="input-hint">按 Enter 发送，Shift + Enter 换行</div>
+                    </div>
+                </div>
+
+                <!-- 联系人聊天面板（内嵌） -->
+                <div class="contact-chat-panel" id="contactChatPanel" style="display:none;">
+                    <div class="contact-chat-header">
+                        <button class="back-to-ai-btn" onclick="switchBackToAIChat()">← 返回</button>
+                        <div class="contact-chat-info">
+                            <span class="contact-chat-name" id="contactChatName">联系人</span>
+                        </div>
+                    </div>
+                    <div class="contact-chat-messages" id="contactChatMessages">
+                        <div class="contact-chat-welcome" id="contactChatWelcome">
+                            <div class="welcome-icon" style="font-size:48px;margin-bottom:12px;">👥</div>
+                            <h3 style="font-size:18px;margin:0 0 8px;color:#1f2937;">选择一个联系人开始对话</h3>
+                            <p style="font-size:14px;color:#6b7280;line-height:1.6;margin:0;">从左侧联系人列表选择一个联系人<br>即可查看聊天记录并发送消息</p>
+                        </div>
+                    </div>
+                    <div class="contact-chat-input-area">
+                        <textarea id="contactChatInput" placeholder="输入消息..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendContactMessage()}"></textarea>
+                        <button onclick="sendContactMessage()">发送</button>
+                    </div>
                 </div>
             </section>
 
@@ -1210,6 +2158,26 @@
         </div>
     </div>
 
+    <!-- ===== 搜索用户弹窗 ===== -->
+    <div class="search-modal" id="contactSearchModal">
+        <div class="modal-overlay" onclick="closeContactSearch()"></div>
+        <div class="c-modal-content">
+            <div class="c-modal-header">
+                <h3>🔍 搜索用户</h3>
+                <button class="c-modal-close" onclick="closeContactSearch()">✕</button>
+            </div>
+            <div class="c-modal-body">
+                <div class="search-box">
+                    <input type="text" id="contactSearchInput" placeholder="输入用户名、手机号..." onkeydown="if(event.key==='Enter')consultantSearchUsers()">
+                    <button onclick="consultantSearchUsers()">搜索</button>
+                </div>
+                <div id="contactSearchResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 联系人聊天弹窗（已移除，改为内嵌面板） ===== -->
+
     <script>
         (function () {
             'use strict';
@@ -1232,6 +2200,24 @@
             let isStreaming = false;
             let abortController = null;
 
+            // WebSocket状态
+            let websocketConnection = null;
+            let websocketConnected = false;
+            let websocketReconnectAttempts = 0;
+            const WEBSOCKET_MAX_RECONNECT = 5;
+            const WEBSOCKET_RECONNECT_DELAY = 3000;
+
+            // 联系人对话状态
+            let _currentContactConversationId = null;
+            let _contactPollingTimer = null;
+
+            // 暴露给第二个 <script> 块使用（不同 script 块的 let/const 互相不可见）
+            // 第二个块中的 contact-chat 相关函数会通过这些全局变量与第一个块通信
+            window._currentContactConversationId = _currentContactConversationId;
+            window._contactPollingTimer = _contactPollingTimer;
+            window.websocketConnection = websocketConnection;
+            window.websocketConnected = websocketConnected;
+
             // ============================
             //  3. DOM references
             // ============================
@@ -1248,6 +2234,10 @@
             const userDropdown = document.getElementById('userDropdown');
             const dropdownUsername = document.getElementById('dropdownUsername');
             const logoutBtn = document.getElementById('logoutBtn');
+
+            // AI对话和联系人对话面板（暴露为全局变量，供联系人功能使用）
+            window.aiChatPanel = document.getElementById('aiChatPanel');
+            window.contactChatPanel = document.getElementById('contactChatPanel');
 
             // Status panel (检索流程)
             const statusPanel = document.getElementById('statusPanel');
@@ -1343,6 +2333,10 @@
 
             document.addEventListener('click', function () {
                 userDropdown.classList.remove('show');
+                const submenu = document.getElementById('accountSafetySubmenu');
+                const toggle = document.getElementById('accountSafetyToggle');
+                if (submenu) submenu.classList.remove('open');
+                if (toggle) toggle.classList.remove('open');
             });
 
             logoutBtn.addEventListener('click', function () {
@@ -1350,6 +2344,130 @@
                 localStorage.removeItem('consultant-auth-user');
                 window.location.replace('/login.html');
             });
+
+            // 个人资料按钮:打开P0ProfileForm对话框
+            const profileBtn = document.getElementById('profileBtn');
+            if (profileBtn) {
+                profileBtn.addEventListener('click', function () {
+                    userDropdown.classList.remove('show');
+                    openConsultantProfileDialog();
+                });
+            }
+
+            // 手机号绑定按钮
+            const phoneBindBtn = document.getElementById('phoneBindBtn');
+            if (phoneBindBtn) {
+                phoneBindBtn.addEventListener('click', function () {
+                    userDropdown.classList.remove('show');
+                    openConsultantPhoneBinding();
+                });
+            }
+
+            // 注销账户按钮
+            const accountCancelBtn = document.getElementById('accountCancelBtn');
+            if (accountCancelBtn) {
+                accountCancelBtn.addEventListener('click', function () {
+                    userDropdown.classList.remove('show');
+                    if (window.P0Modules && window.P0Modules.AccountCancellation) {
+                        window.P0Modules.AccountCancellation.showDialog();
+                    } else {
+                        alert('账户注销模块暂未加载');
+                    }
+                });
+            }
+
+            const safetyToggle = document.getElementById('accountSafetyToggle');
+            const safetySubmenu = document.getElementById('accountSafetySubmenu');
+            if (safetyToggle && safetySubmenu) {
+                safetyToggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    this.classList.toggle('open');
+                    safetySubmenu.classList.toggle('open');
+                });
+            }
+
+            // ============================
+            //  5a. 个人资料 & 手机绑定对话框
+            // ============================
+
+            /** 打开企业端个人资料对话框(使用P0Modules.ProfileForm) */
+            function openConsultantProfileDialog() {
+                if (window.P0Modules && window.P0Modules.ProfileForm) {
+                    let dialog = document.getElementById('consultant-profile-dialog');
+                    if (!dialog) {
+                        dialog = document.createElement('div');
+                        dialog.id = 'consultant-profile-dialog';
+                        dialog.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+                        dialog.innerHTML = `
+                            <div style="background:#fff;border-radius:12px;padding:24px;width:520px;max-width:90%;max-height:85vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2);">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                                    <h3 style="margin:0;font-size:18px;">👤 个人资料</h3>
+                                    <button id="consultant-profile-close" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+                                </div>
+                                <div id="profile-form-container"></div>
+                            </div>
+                        `;
+                        document.body.appendChild(dialog);
+                        dialog.querySelector('#consultant-profile-close').onclick = () => dialog.remove();
+                        dialog.addEventListener('click', function(e) { if (e.target === this) dialog.remove(); });
+                    }
+                    dialog.style.display = 'flex';
+                    window.P0Modules.ProfileForm.load();
+                } else {
+                    alert('个人资料模块暂未加载');
+                }
+            }
+
+            /** 企业端手机号绑定对话框 */
+            function openConsultantPhoneBinding() {
+                let dialog = document.getElementById('consultant-phone-dialog');
+                if (!dialog) {
+                    dialog = document.createElement('div');
+                    dialog.id = 'consultant-phone-dialog';
+                    dialog.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+                    dialog.innerHTML = `
+                        <div style="background:#fff;border-radius:12px;padding:24px;width:380px;max-width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);">
+                            <h3 style="margin:0 0 12px;font-size:18px;">📱 绑定手机号</h3>
+                            <p style="margin:0 0 16px;color:#6b7280;font-size:14px;">请输入手机号进行绑定</p>
+                            <input id="consultant-phone-input" type="text" maxlength="11" placeholder="请输入11位手机号"
+                                   style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                            <div id="consultant-phone-error" style="color:#ef4444;font-size:12px;margin-top:6px;min-height:18px;"></div>
+                            <div style="display:flex;gap:8px;margin-top:16px;">
+                                <button id="consultant-phone-cancel" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:6px;cursor:pointer;font-size:14px;">取消</button>
+                                <button id="consultant-phone-confirm" style="flex:1;padding:10px;background:#3b82f6;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">立即绑定</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(dialog);
+
+                    dialog.querySelector('#consultant-phone-cancel').onclick = () => dialog.remove();
+                    dialog.querySelector('#consultant-phone-confirm').onclick = async () => {
+                        const phone = document.getElementById('consultant-phone-input').value.trim();
+                        const errEl = document.getElementById('consultant-phone-error');
+                        if (!/^\d{11}$/.test(phone)) {
+                            errEl.textContent = '请输入正确的11位手机号';
+                            return;
+                        }
+                        try {
+                            const token = localStorage.getItem('consultant-auth-token');
+                            const resp = await fetch('/api/profile/me/phone', {
+                                method: 'PUT',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ phone }),
+                            });
+                            if (!resp.ok) {
+                                const ed = await resp.json().catch(() => ({detail:'绑定失败'}));
+                                throw new Error(ed.detail);
+                            }
+                            alert('手机号绑定成功!');
+                            dialog.remove();
+                        } catch (e) {
+                            errEl.textContent = e.message;
+                        }
+                    };
+                }
+                dialog.style.display = 'flex';
+            }
 
             // ============================
             //  5b. Status panel toggle (检索流程 折叠/展开)
@@ -1359,7 +2477,6 @@
             }
 
             statusPanelHeader.addEventListener('click', function (e) {
-                // 点击标题栏整体切换折叠状态
                 e.stopPropagation();
                 toggleStatusPanel();
             });
@@ -1423,7 +2540,6 @@
             async function switchConversation(convId) {
                 if (isStreaming) {
                     cancelStreaming();
-                    // small delay to allow cancel
                     await new Promise(function (r) { setTimeout(r, 100); });
                 }
 
@@ -1624,10 +2740,9 @@
                                             appendMessage('assistant', event.answer);
                                         }
                                     }
-                                    // 在状态面板底部显示完成提示
                                     showStatusFooter('检索完成', 'complete');
                                 } else if (event.step !== undefined) {
-                                    // Step event - 更新检索流程状态面板（不再插入聊天流）
+                                    // Step event - 更新检索流程状态面板
                                     addOrUpdateStatusStep(event);
                                 }
                             } catch (e) {
@@ -1682,21 +2797,51 @@
                 var id = 'msg-' + messageCounter;
 
                 var msgDiv = document.createElement('div');
-                msgDiv.className = 'message ' + role;
+                // 任务E：兼容旧 user/assistant/system 的同时，附加 sent/received/ai-msg 新类名
+                //  - role='user'  -> sent（自己说话，靠右）
+                //  - role='assistant' -> ai-msg（AI 居中）
+                //  - role='system'   -> ai-msg（系统提示居中置灰）
+                var extraClass = '';
+                if (role === 'user') {
+                    extraClass = ' sent';
+                } else if (role === 'assistant') {
+                    extraClass = ' received ai-msg';
+                } else if (role === 'system') {
+                    extraClass = ' ai-msg';
+                }
+                msgDiv.className = 'message ' + role + extraClass;
                 msgDiv.id = id;
 
                 var avatarSvg = '';
+                var avatarText = '';
                 if (role === 'user') {
-                    avatarSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+                    var myName = (userInfo && (userInfo.display_name || userInfo.username)) || '我';
+                    avatarText = (myName || '我')[0] || '我';
+                    avatarSvg = '<span style="font-size:0.85rem;">' + escapeHtml(avatarText) + '</span>';
+                } else if (role === 'assistant') {
+                    avatarText = 'AI';
+                    avatarSvg = '<span style="font-size:0.85rem;font-weight:600;">' + avatarText + '</span>';
                 } else {
                     avatarSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>';
                 }
 
                 var contentHtml = escapeHtml(content).replace(/\n/g, '<br>');
+                // AI 消息前加 AI 助手 标签
+                var aiTag = (role === 'assistant')
+                    ? '<span class="ai-tag">AI 助手</span>'
+                    : '';
+                var senderLabel = (role === 'user')
+                    ? '<span class="sender-label">' + escapeHtml(avatarText) + '</span>'
+                    : '';
 
                 msgDiv.innerHTML =
                     '<div class="msg-avatar">' + avatarSvg + '</div>' +
-                    '<div class="msg-content"><div class="msg-bubble">' + contentHtml + '</div></div>';
+                    '<div class="msg-content">' +
+                        '<div class="msg-stack">' +
+                            (aiTag || senderLabel ? (aiTag + senderLabel) : '') +
+                            '<div class="msg-bubble">' + contentHtml + '</div>' +
+                        '</div>' +
+                    '</div>';
 
                 messagesContainer.appendChild(msgDiv);
                 messagesContainer.style.display = '';
@@ -1717,7 +2862,8 @@
 
             function appendSystemMessage(text) {
                 var msgDiv = document.createElement('div');
-                msgDiv.className = 'message system';
+                // 任务E：附加 ai-msg 类名（系统提示也走 AI 居中样式）
+                msgDiv.className = 'message system ai-msg';
                 msgDiv.innerHTML = '<div class="msg-content"><div class="msg-bubble">' + escapeHtml(text) + '</div></div>';
                 messagesContainer.appendChild(msgDiv);
                 messagesContainer.style.display = '';
@@ -1727,11 +2873,12 @@
                 messageCounter++;
                 var id = 'msg-thinking-' + messageCounter;
                 var msgDiv = document.createElement('div');
-                msgDiv.className = 'message assistant';
+                // 任务E：附加 ai-msg 类名（thinking 指示器也走 AI 居中样式）
+                msgDiv.className = 'message assistant ai-msg';
                 msgDiv.id = id;
                 msgDiv.innerHTML =
-                    '<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>' +
-                    '<div class="msg-content"><div class="msg-bubble thinking-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+                    '<div class="msg-avatar"><span style="font-size:0.85rem;font-weight:600;">AI</span></div>' +
+                    '<div class="msg-content"><div class="msg-stack"><div class="msg-bubble thinking-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></div>';
                 messagesContainer.appendChild(msgDiv);
                 messagesContainer.style.display = '';
                 return id;
@@ -1874,7 +3021,907 @@
 
             init();
 
+            // Expose API helpers for use by contact functionality
+            window._apiGet = apiGet;
+            window._apiPost = apiPost;
+            window._apiDelete = apiDelete;
+            window._token = token;
+            window._API_BASE = API_BASE;
+            window._getAuthHeaders = getAuthHeaders;
+            window._escapeHtml = escapeHtml;
+            // 暴露当前用户信息，供联系人模块判断 sender_id 归属
+            window._userInfo = userInfo;
+
         })();
+    </script>
+
+    <!-- Contact functionality -->
+    <script>
+        (function () {
+            'use strict';
+
+            // ============================
+            //  Contact Module State
+            // ============================
+            const apiGet = window._apiGet;
+            const apiPost = window._apiPost;
+            const escapeHtml = window._escapeHtml;
+            // 从主 IIFE 暴露的 userInfo 中获取当前用户
+            const userInfo = window._userInfo || null;
+
+            // 从主 IIFE 暴露的联系人对话状态变量（第一个 <script> 块中的 let 变量
+            // 在 IIFE 内不可见，必须显式通过 window 访问）
+            const aiChatPanel = window.aiChatPanel;
+            const contactChatPanel = window.contactChatPanel;
+
+            // 跨脚本块状态：第二个 IIFE 中需要使用第一个 IIFE 中声明的 let 变量
+            // 使用 window 间接访问，保证状态双向同步
+            const _getConvId = () => window._currentContactConversationId;
+            const _setConvId = (v) => { window._currentContactConversationId = v; };
+            const _getPollTimer = () => window._contactPollingTimer;
+            const _setPollTimer = (v) => { window._contactPollingTimer = v; };
+            const _getWsConn = () => window.websocketConnection;
+            const _setWsConn = (v) => { window.websocketConnection = v; };
+            const _getWsConnected = () => window.websocketConnected;
+            const _setWsConnected = (v) => { window.websocketConnected = v; };
+
+            // 用 get/set 访问器，简化后续代码
+            Object.defineProperty(window.__contactBridge || (window.__contactBridge = {}), 'convId', {
+                get: _getConvId, set: _setConvId,
+            });
+
+            let _currentChatConvId = null;
+
+            // ============================
+            //  API Request helper (联系人模块专用，带401安全处理)
+            // ============================
+            async function apiRequest(path, options) {
+                options = options || {};
+                var method = (options.method || 'GET').toUpperCase();
+                try {
+                    if (method === 'GET') {
+                        return await apiGet(path);
+                    }
+                    var body = undefined;
+                    if (options.body) {
+                        try { body = JSON.parse(options.body); } catch (e) { body = options.body; }
+                    }
+                    return await apiPost(path, body);
+                } catch (e) {
+                    // 如果是401或认证相关错误（此时apiGet/apiPost已清理token并跳转），
+                    // 这里不再重复处理，让页面自然跳转到登录页
+                    if (e.message && e.message.includes('401')) {
+                        console.warn('[Contacts] 认证失败，等待页面跳转...');
+                        return null;
+                    }
+                    throw e;
+                }
+            }
+
+            // ============================
+            //  Search Modal
+            // ============================
+            window.openContactSearch = function () {
+                //#region debug-point IP1
+                console.log('[DEBUG-IP1] openContactSearch() called');
+                console.log('[DEBUG-IP1] modal element:', document.getElementById('contactSearchModal'));
+                console.log('[DEBUG-IP1] modal exists:', !!document.getElementById('contactSearchModal'));
+                //#endregion
+                var modal = document.getElementById('contactSearchModal');
+                if (modal) modal.classList.add('active');
+                var input = document.getElementById('contactSearchInput');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+                var results = document.getElementById('contactSearchResults');
+                if (results) results.innerHTML = '';
+            };
+
+            window.closeContactSearch = function () {
+                document.getElementById('contactSearchModal').classList.remove('active');
+            };
+
+            // ============================
+            //  WebSocket Connection
+            // ============================
+            function initWebSocket() {
+                if (!userInfo || !userInfo.user_id) {
+                    console.warn('[WebSocket] 用户信息缺失，无法初始化');
+                    return;
+                }
+
+                // 第二个 <script> 块中无法直接访问第一个块中的 const token，
+                // 需要从 localStorage 重新读取（与 getAuthHeaders 一致）。
+                const authToken = localStorage.getItem('consultant-auth-token');
+                if (!authToken) {
+                    console.warn('[WebSocket] token 缺失，无法初始化 WebSocket');
+                    return;
+                }
+
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsProtocol}//${window.location.host}/ws/chat/${userInfo.user_id}?token=${authToken}`;
+
+                try {
+                    const _wsConn = new WebSocket(wsUrl);
+
+                    _wsConn.onopen = function (event) {
+                        console.log('[WebSocket] 连接成功');
+                        _setWsConnected(true);
+                        _setWsConn(_wsConn);
+                        websocketReconnectAttempts = 0;
+                        showToast('实时消息已连接', 'success');
+
+                        // 发送心跳检测
+                        setInterval(function () {
+                            const __c = _getWsConn();
+                            if (_getWsConnected() && __c && __c.readyState === WebSocket.OPEN) {
+                                __c.send(JSON.stringify({ type: 'ping' }));
+                            }
+                        }, 30000);
+                    };
+
+                    _wsConn.onmessage = function (event) {
+                        try {
+                            const message = JSON.parse(event.data);
+                            handleWebSocketMessage(message);
+                        } catch (e) {
+                            console.warn('[WebSocket] 消息解析失败:', e);
+                        }
+                    };
+
+                    _wsConn.onerror = function (error) {
+                        console.error('[WebSocket] 连接错误:', error);
+                        showToast('实时消息连接失败，将使用HTTP轮询', 'warning');
+                    };
+
+                    _wsConn.onclose = function (event) {
+                        console.log('[WebSocket] 连接关闭:', event.code, event.reason);
+                        _setWsConnected(false);
+
+                        // 自动重连
+                        if (websocketReconnectAttempts < WEBSOCKET_MAX_RECONNECT) {
+                            websocketReconnectAttempts++;
+                            console.log(`[WebSocket] 尝试重连 (${websocketReconnectAttempts}/${WEBSOCKET_MAX_RECONNECT})`);
+                            setTimeout(initWebSocket, WEBSOCKET_RECONNECT_DELAY);
+                        } else {
+                            console.warn('[WebSocket] 达到最大重连次数，降级为HTTP轮询');
+                            fallbackToHTTPPolling();
+                        }
+                    };
+                } catch (error) {
+                    console.error('[WebSocket] 初始化失败:', error);
+                    fallbackToHTTPPolling();
+                }
+            }
+
+            function handleWebSocketMessage(message) {
+                //#region debug-point IP3
+                console.log('[DEBUG-IP3] WebSocket message received:', message);
+                console.log('[DEBUG-IP3] message type:', message.type);
+                console.log('[DEBUG-IP3] conversation_id:', message.conversation_id);
+                //#endregion
+                const msgType = message.type;
+
+                if (msgType === 'pong') {
+                    // 心跳响应
+                    return;
+                }
+
+                if (msgType === 'new_message') {
+                    // 新消息推送
+                    const convId = message.conversation_id;
+                    const msgData = message.message;
+
+                    // 如果当前正在查看该对话，实时更新UI
+                    if (_getConvId() === convId) {
+                        appendNewMessage(msgData);
+                        // 立即标记已读(因为用户正在看这个对话)
+                        apiRequest('/api/unread-messages/mark-read', {
+                            method: 'POST',
+                            body: JSON.stringify({ conversation_id: convId }),
+                        }).catch(function (e) {
+                            console.warn('[未读] 标记已读失败:', e);
+                        });
+                    } else {
+                        // 未查看的对话:增量增加未读计数
+                        window.incrementUnreadCount(convId);
+                    }
+
+                    // 更新联系人列表中的最后消息
+                    updateContactLastMessage(convId, msgData);
+
+                    // 显示通知
+                    if (_getConvId() !== convId) {
+                        showToast(`收到来自 ${msgData.sender_id} 的新消息`, 'info');
+                    }
+                }
+
+                if (msgType === 'online_status') {
+                    // 在线状态更新
+                    updateContactOnlineStatus(message.user_id, message.online);
+                }
+
+                if (msgType === 'typing') {
+                    // 正在输入提示
+                    if (_getConvId()) {
+                        showTypingIndicator(message.user_id, message.display_name);
+                    }
+                }
+            }
+
+            function fallbackToHTTPPolling() {
+                console.log('[WebSocket] 降级为HTTP轮询');
+                if (_getConvId() && !_getPollTimer()) {
+                    startContactPolling(_getConvId());
+                }
+            }
+
+            // ============================
+            //  Panel Switching
+            // ============================
+            /**
+             * 切换侧边栏Tab（AI对话 / 联系人）
+             * 同时切换主内容区的显示
+             */
+            window.switchSidebarTab = function (tabType) {
+                // 切换Tab按钮active状态
+                const aiBtn = document.getElementById('aiChatTabBtn');
+                const contactBtn = document.getElementById('contactTabBtn');
+                if (tabType === 'ai') {
+                    aiBtn.classList.add('active');
+                    contactBtn.classList.remove('active');
+                } else {
+                    aiBtn.classList.remove('active');
+                    contactBtn.classList.add('active');
+                }
+
+                // 切换侧边栏内容区
+                const aiContent = document.getElementById('aiChatTabContent');
+                const contactContent = document.getElementById('contactTabContent');
+                if (tabType === 'ai') {
+                    aiContent.classList.add('active');
+                    contactContent.classList.remove('active');
+                } else {
+                    aiContent.classList.remove('active');
+                    contactContent.classList.add('active');
+                }
+
+                // 切换主内容区显示
+                if (tabType === 'ai') {
+                    // 显示AI聊天窗口
+                    if (aiChatPanel) aiChatPanel.style.display = 'flex';
+                    if (contactChatPanel) contactChatPanel.classList.remove('active');
+                    // 清空联系人选中状态
+                    _setConvId(null);
+                } else {
+                    // 显示联系人聊天窗口
+                    if (aiChatPanel) aiChatPanel.style.display = 'none';
+                    if (contactChatPanel) {
+                        contactChatPanel.style.display = 'flex';
+                        if (_getConvId()) {
+                            contactChatPanel.classList.add('active');
+                            // 隐藏欢迎元素
+                            const welcome = document.getElementById('contactChatWelcome');
+                            if (welcome) welcome.style.display = 'none';
+                        } else {
+                            // 显示欢迎内容
+                            const welcome = document.getElementById('contactChatWelcome');
+                            if (welcome) welcome.style.display = 'block';
+                            const header = document.getElementById('contactChatName');
+                            if (header) header.textContent = '联系人';
+                            const msgContainer = document.getElementById('contactChatMessages');
+                            if (msgContainer) msgContainer.dataset.loaded = 'false';
+                        }
+                    }
+                }
+            }
+
+            /**
+             * 切换侧边栏显示/隐藏状态
+             */
+            window.toggleSidebar = function () {
+                const sidebar = document.getElementById('sidebar');
+                const expandBtn = document.getElementById('sidebarExpandBtn');
+
+                // 切换收起状态
+                sidebar.classList.toggle('collapsed');
+
+                // 更新展开按钮文字
+                if (sidebar.classList.contains('collapsed')) {
+                    if (expandBtn) expandBtn.textContent = '☰';
+                } else {
+                    if (expandBtn) expandBtn.textContent = '◀';
+                }
+
+                // 保存状态到localStorage
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('consultant-sidebar-collapsed', isCollapsed);
+            };
+
+            /**
+             * 恢复侧边栏状态（页面加载时）
+             */
+            function restoreSidebarState() {
+                const collapsed = localStorage.getItem('consultant-sidebar-collapsed') === 'true';
+                const sidebar = document.getElementById('sidebar');
+                const expandBtn = document.getElementById('sidebarExpandBtn');
+
+                if (collapsed && sidebar) {
+                    sidebar.classList.add('collapsed');
+                    if (expandBtn) expandBtn.textContent = '☰';
+                }
+            }
+
+            // 页面加载时恢复状态
+            restoreSidebarState();
+
+            window.switchToContactChat = function (conversationId, contactName) {
+                //#region debug-point IP2
+                console.log('[DEBUG-IP2] switchToContactChat() called with convId:', conversationId);
+                console.log('[DEBUG-IP2] aiChatPanel element:', aiChatPanel);
+                console.log('[DEBUG-IP2] aiChatPanel before:', aiChatPanel ? aiChatPanel.style.display : 'element not found');
+                console.log('[DEBUG-IP2] contactChatPanel element:', contactChatPanel);
+                console.log('[DEBUG-IP2] contactChatPanel before:', contactChatPanel ? contactChatPanel.classList.contains('active') : 'element not found');
+                //#endregion
+
+                // 自动切换到联系人Tab
+                switchSidebarTab('contact');
+
+                _setConvId(conversationId);
+
+                // 重置消息容器的加载状态（切换对话时重新加载）
+                const msgContainer = document.getElementById('contactChatMessages');
+                if (msgContainer) msgContainer.dataset.loaded = 'false';
+
+                // 隐藏欢迎元素
+                const welcome = document.getElementById('contactChatWelcome');
+                if (welcome) welcome.style.display = 'none';
+
+                // 设置联系人信息
+                const nameEl = document.getElementById('contactChatName');
+                if (nameEl) nameEl.textContent = contactName || '联系人';
+
+                // 加载消息
+                loadContactMessages(conversationId);
+
+                // 延迟标记已读(让用户先看到未读数字,3秒后清除)
+                setTimeout(function () {
+                    // 先清除未读徽章
+                    window.clearUnreadBadge(conversationId);
+                    // 然后调用API标记已读
+                    apiRequest('/api/unread-messages/mark-read', {
+                        method: 'POST',
+                        body: JSON.stringify({ conversation_id: conversationId }),
+                    }).catch(function (e) {
+                        console.warn('[未读] 标记已读失败:', e);
+                    });
+                }, 3000);
+
+                // 如果WebSocket未连接，启动HTTP轮询
+                if (!_getWsConnected()) {
+                    startContactPolling(conversationId);
+                }
+
+                console.log(`[Switch] 切换到联系人对话: ${conversationId}`);
+            };
+
+            window.switchBackToAIChat = function () {
+                // 停止联系人消息轮询
+                if (_getPollTimer()) {
+                    clearInterval(_getPollTimer());
+                    _setPollTimer(null);
+                }
+
+                // 自动切换到AI对话Tab
+                switchSidebarTab('ai');
+
+                console.log('[Switch] 返回AI对话');
+            };
+
+            // ============================
+            //  Contact Message Functions
+            // ============================
+            async function loadContactMessages(conversationId) {
+                const container = document.getElementById('contactChatMessages');
+                if (!container) return;
+
+                // 首次加载时显示loading，后续轮询时静默更新
+                const isFirstLoad = !container.dataset.loaded || container.dataset.loaded === 'false';
+                if (isFirstLoad) {
+                    container.innerHTML = '<div class="loading">加载中...</div>';
+                }
+
+                try {
+                    const data = await apiRequest(`/api/contact-chat/${conversationId}/messages`);
+                    const messages = data.messages || [];
+                    if (messages.length === 0) {
+                        if (isFirstLoad) {
+                            container.innerHTML = '<div class="chat-empty">暂无消息，开始对话吧</div>';
+                        }
+                        return;
+                    }
+                    // 使用统一渲染函数：按 sender_id 区分自己/对方/AI
+                    const currentUserId = (userInfo && (userInfo.user_id || userInfo.id)) ? (userInfo.user_id || userInfo.id) : null;
+
+                    if (isFirstLoad) {
+                        // 首次加载：直接渲染所有消息
+                        container.innerHTML = '';
+                        messages.forEach(msg => {
+                            const html = renderContactMessage(msg, currentUserId);
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = html;
+                            const msgElement = tempDiv.firstElementChild;
+                            msgElement.dataset.msgId = msg.id || `${msg.sender_id}_${msg.created_at}`;
+                            container.appendChild(msgElement);
+                        });
+                        container.dataset.loaded = 'true';
+                    } else {
+                        // 后续轮询：增量更新（只添加新消息）
+                        updateMessagesIncrementally(container, messages, currentUserId);
+                    }
+
+                    container.scrollTop = container.scrollHeight;
+                } catch (e) {
+                    if (isFirstLoad) {
+                        container.innerHTML = '<div class="chat-error">加载失败</div>';
+                    }
+                    console.error('[Chat] 加载消息失败:', e);
+                }
+            }
+
+            /**
+             * 增量更新消息列表（避免全量重渲染和闪烁）
+             */
+            function updateMessagesIncrementally(container, newMessages, currentUserId) {
+                // 获取当前显示的消息ID集合
+                const existingMessageIds = new Set();
+                container.querySelectorAll('.message[data-msg-id]').forEach(el => {
+                    existingMessageIds.add(el.dataset.msgId);
+                });
+
+                // 只添加新消息（通过消息ID判断）
+                let hasNewMessages = false;
+                newMessages.forEach(msg => {
+                    const msgId = msg.id || `${msg.sender_id}_${msg.created_at}`;
+                    if (!existingMessageIds.has(msgId)) {
+                        // 插入新消息
+                        const html = renderContactMessage(msg, currentUserId);
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+                        const newMsgElement = tempDiv.firstElementChild;
+                        newMsgElement.dataset.msgId = msgId;
+
+                        // 找到合适的插入位置（按时间排序插入到最后）
+                        container.appendChild(newMsgElement);
+                        hasNewMessages = true;
+                    }
+                });
+
+                // 只有在添加了新消息时才滚动
+                if (hasNewMessages) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+
+            /**
+             * 渲染单条联系人消息为 HTML 字符串（统一左右布局 + 头像）
+             * - 任务B：当前用户（sender_id == currentUserId）→ 居右（.sent）
+             * - 任务B：对方 → 居左（.received）
+             * - 任务B-2：AI 消息（sender_id 为 null 且 role==='assistant'）→ 居中（.ai-msg）
+             * 兼容字段：若后端未回传 sender_id，则回退到 sender_type 判断
+             */
+            function renderContactMessage(msg, currentUserId) {
+                // 安全解析时间
+                let timeText = '';
+                try {
+                    timeText = new Date(msg.created_at).toLocaleTimeString();
+                } catch (e) {
+                    timeText = '';
+                }
+
+                // 1) 优先用 sender_id 判断
+                let isMine = false;
+                if (msg.sender_id && currentUserId) {
+                    isMine = String(msg.sender_id) === String(currentUserId);
+                } else if (msg.sender_type) {
+                    // 2) 回退：用 sender_type（兼容历史数据）
+                    const myType = (userInfo && userInfo.role === 'consultant') ? 'consultant' : 'user';
+                    isMine = msg.sender_type === myType;
+                }
+
+                // 3) AI 消息判断
+                const isAI = !msg.sender_id && msg.role === 'assistant';
+
+                // 4) 决定样式类
+                let cls = 'message';
+                if (isAI) {
+                    cls += ' ai-msg';
+                } else if (isMine) {
+                    cls += ' sent';
+                } else {
+                    cls += ' received';
+                }
+
+                // 5) 头像首字母
+                const myName = (userInfo && (userInfo.display_name || userInfo.username)) || '我';
+                const myInitial = (myName || '我')[0] || '我';
+                const otherNameEl = document.getElementById('contactChatName');
+                const otherName = otherNameEl ? (otherNameEl.textContent || 'TA') : 'TA';
+                const otherInitial = (otherName || 'TA')[0] || 'T';
+                const aiInitial = 'AI';
+
+                let avatarChar = myInitial;
+                let senderLabel = '';
+                if (isAI) {
+                    avatarChar = aiInitial;
+                    senderLabel = '<span class="sender-label"><span class="ai-tag">AI 助手</span></span>';
+                } else if (isMine) {
+                    avatarChar = myInitial;
+                } else {
+                    avatarChar = otherInitial;
+                    senderLabel = `<span class="sender-label">${escapeHtml(otherName)}</span>`;
+                }
+
+                const safeContent = escapeHtml(msg.content || '').replace(/\n/g, '<br>');
+                return `<div class="${cls}">
+                    <div class="msg-row">
+                        <div class="msg-avatar-circle">${escapeHtml(avatarChar)}</div>
+                        <div class="msg-stack">
+                            ${senderLabel}
+                            <div class="msg-bubble">${safeContent}</div>
+                            <div class="msg-time">${timeText}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            function appendNewMessage(msgData) {
+                const container = document.getElementById('contactChatMessages');
+                if (!container) return;
+
+                const currentUserId = (userInfo && (userInfo.user_id || userInfo.id)) ? (userInfo.user_id || userInfo.id) : null;
+                const html = renderContactMessage(msgData, currentUserId);
+                container.insertAdjacentHTML('beforeend', html);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            function startContactPolling(conversationId) {
+                if (_getPollTimer()) clearInterval(_getPollTimer());
+                _setPollTimer(setInterval(function () {
+                    if (_getConvId() === conversationId) {
+                        loadContactMessages(conversationId);
+                    }
+                }, 3000));
+            }
+
+            function updateContactLastMessage(conversationId, message) {
+                // 更新联系人列表中的最后消息显示
+                const contacts = document.querySelectorAll('.contact-item');
+                contacts.forEach(item => {
+                    if (item.getAttribute('onclick').includes(conversationId)) {
+                        const lastMsgEl = item.querySelector('.contact-last-msg');
+                        if (lastMsgEl) {
+                            lastMsgEl.textContent = message.content.substring(0, 50) + (message.content.length > 50 ? '...' : '');
+                        }
+                    }
+                });
+            }
+
+            function updateContactOnlineStatus(userId, online) {
+                // 更新联系人列表中的在线状态
+                // 这里需要根据实际HTML结构调整
+                consultantLoadContacts(); // 简化实现：重新加载联系人列表
+            }
+
+            function showTypingIndicator(userId, displayName) {
+                // 显示"正在输入"提示（可选实现）
+                console.log(`[Typing] ${displayName} 正在输入...`);
+            }
+
+            window.sendContactMessage = async function () {
+                const input = document.getElementById('contactChatInput');
+                const content = input ? input.value.trim() : '';
+                if (!content || !_getConvId()) {
+                    showToast('请输入消息', 'warning');
+                    return;
+                }
+
+                try {
+                    // 如果WebSocket连接可用，通过WebSocket发送
+                    const __c = _getWsConn();
+                    if (_getWsConnected() && __c && __c.readyState === WebSocket.OPEN) {
+                        __c.send(JSON.stringify({
+                            type: 'chat_message',
+                            conversation_id: _getConvId(),
+                            content: content
+                        }));
+                        if (input) input.value = '';
+                        console.log('[WebSocket] 消息发送成功');
+                    } else {
+                        // 降级为HTTP API发送
+                        await apiRequest(`/api/contact-chat/${_getConvId()}/messages`, {
+                            method: 'POST',
+                            body: JSON.stringify({ content: content })
+                        });
+                        if (input) input.value = '';
+                        await loadContactMessages(_getConvId());
+                        console.log('[HTTP] 消息发送成功');
+                    }
+                } catch (e) {
+                    console.error('[Send] 发送失败:', e);
+                    showToast('发送失败', 'error');
+                }
+            };
+
+            // ============================
+            //  Initialize WebSocket
+            // ============================
+            // 页面加载完成后初始化WebSocket
+            setTimeout(initWebSocket, 1000);
+
+            // ============================
+            //  Load Contacts List
+            // ============================
+            window.consultantLoadContacts = async function () {
+                //#region debug-point IP4
+                console.log('[DEBUG-IP4] consultantLoadContacts() called');
+                //#endregion
+                try {
+                    // 使用与客户端同源的 /api/contact-chat/list 端点（共享 contact_chat router）
+                    // 之前使用的 /api/consultant/contact-conversations 未注册到规划师端 server，
+                    // 导致返回 404，规划师端联系人列表一直为空。
+                    var data = await apiRequest('/api/contact-chat/list');
+                    //#region debug-point IP4
+                    console.log('[DEBUG-IP4] API response:', data);
+                    console.log('[DEBUG-IP4] contactsList element:', document.getElementById('contactsList'));
+                    //#endregion
+                    if (!data) {
+                        // 认证失败，apiRequest已处理重定向
+                        return;
+                    }
+                    var convs = data.conversations || [];
+                    var container = document.getElementById('contactsList');
+                    if (!container) return;
+                    if (convs.length === 0) {
+                        container.innerHTML = '<div class="contacts-empty">暂无联系人</div>';
+                        return;
+                    }
+                    container.innerHTML = convs.map(function (c) {
+                        var u = c.other_user || {};
+                        var initial = (u.display_name || u.username || '?')[0];
+                        var status = u.online ? 'online' : 'offline';
+                        var statusText = u.online ? '● 在线' : '○ 离线';
+                        // 处理last_message为null的情况
+                        var lastMsg = c.last_message ? escapeHtml(c.last_message) : '';
+                        var name = escapeHtml(u.display_name || u.username || '未知用户');
+                        // 未读数字徽章(始终渲染,通过CSS控制显示)
+                        var unreadCount = c.unread_count || 0;
+                        var hasUnread = unreadCount > 0;
+                        var badgeText = unreadCount > 99 ? '99+' : unreadCount.toString();
+                        // 对name进行转义处理，防止引号破坏onclick
+                        var safeName = (u.display_name || u.username || '未知用户').replace(/'/g, "\\'");
+                        return '<div class="contact-item ' + (hasUnread ? 'has-unread' : '') + '" onclick="consultantOpenChat(\'' + c.id + '\', \'' + safeName.replace(/\\/g, '\\\\') + '\')">' +
+                            '<div class="contact-avatar">' + escapeHtml(initial) + '</div>' +
+                            '<div class="contact-info">' +
+                                '<div class="contact-name-row">' +
+                                    '<span class="contact-name">' + name + '</span>' +
+                                    '<span class="contact-online ' + status + '">' + statusText + '</span>' +
+                                    '<span class="unread-badge" title="未读消息" data-unread="' + unreadCount + '">' + badgeText + '</span>' +
+                                '</div>' +
+                                '<div class="contact-last-msg">' + (lastMsg || '暂无消息') + '</div>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                } catch (e) {
+                    console.error('[Contacts] 加载失败:', e);
+                }
+            };
+
+            /**
+             * 增量增加未读计数(WebSocket消息到达时调用)
+             * 使用data-unread属性作为权威数据源,避免display:none时textContent为空的问题
+             * @param {string} conversationId - 对话ID
+             */
+            window.incrementUnreadCount = function (conversationId) {
+                var contacts = document.querySelectorAll('.contact-item');
+                contacts.forEach(function (item) {
+                    var onclickAttr = item.getAttribute('onclick');
+                    if (onclickAttr && onclickAttr.includes(conversationId)) {
+                        var badgeEl = item.querySelector('.unread-badge');
+                        if (!badgeEl) {
+                            console.warn('[未读] 找不到徽章元素: conv=' + conversationId);
+                            return;
+                        }
+
+                        // 优先从data-unread属性读取真实未读数
+                        var dataCount = parseInt(badgeEl.dataset.unread) || 0;
+                        var newCount = dataCount + 1;
+
+                        // 更新徽章显示
+                        badgeEl.textContent = newCount > 99 ? '99+' : newCount;
+                        badgeEl.dataset.unread = newCount;
+                        item.classList.add('has-unread');
+
+                        // 更新data属性,供后续使用
+                        item.dataset.unreadCount = newCount;
+
+                        console.log('[未读] 增加未读计数: conv=' + conversationId + ', count=' + newCount);
+                    }
+                });
+            };
+
+            /**
+             * 清除单个联系人的未读徽章(点击联系人后延迟调用)
+             * @param {string} conversationId - 对话ID
+             */
+            window.clearUnreadBadge = function (conversationId) {
+                var contacts = document.querySelectorAll('.contact-item');
+                contacts.forEach(function (item) {
+                    var onclickAttr = item.getAttribute('onclick');
+                    if (onclickAttr && onclickAttr.includes(conversationId)) {
+                        var badgeEl = item.querySelector('.unread-badge');
+                        if (badgeEl) {
+                            badgeEl.textContent = '0';
+                            badgeEl.dataset.unread = '0';
+                        }
+                        item.classList.remove('has-unread');
+                        item.dataset.unreadCount = 0;
+
+                        console.log('[未读] 清除未读徽章: conv=' + conversationId);
+                    }
+                });
+            };
+
+            // ============================
+            //  Search Users
+            // ============================
+            window.consultantSearchUsers = async function () {
+                var input = document.getElementById('contactSearchInput');
+                var keyword = input ? input.value.trim() : '';
+                if (!keyword) return alert('请输入搜索关键词');
+
+                var resultsDiv = document.getElementById('contactSearchResults');
+                if (!resultsDiv) return;
+                resultsDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;">搜索中...</div>';
+
+                try {
+                    var data = await apiRequest('/api/friendship/search-all?keyword=' + encodeURIComponent(keyword));
+                    var users = Array.isArray(data) ? data : (data.users || []);
+                    if (users.length === 0) {
+                        resultsDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;">未找到用户</div>';
+                        return;
+                    }
+                    resultsDiv.innerHTML = users.map(function (u) {
+                        var name = escapeHtml(u.display_name || u.username);
+                        var roleLabel = u.role === 'consultant' ? '企业' : '用户';
+                        // Escape quotes in name for onclick
+                        var safeName = name.replace(/'/g, "\\'");
+                        return '<div class="user-search-item">' +
+                            '<div><span class="user-name">' + name + '</span><span class="user-role-badge ' + u.role + '">' + roleLabel + '</span></div>' +
+                            '<button class="u-action-btn" onclick="consultantStartChat(\'' + u.id + '\', \'' + safeName + '\')">开始对话</button>' +
+                        '</div>';
+                    }).join('');
+                } catch (e) {
+                    resultsDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;">搜索失败</div>';
+                }
+            };
+
+            // ============================
+            //  Start Chat with User
+            // ============================
+            window.consultantStartChat = async function (targetUserId, targetName) {
+                try {
+                    var data = await apiRequest('/api/contact-chat/ensure', {
+                        method: 'POST',
+                        body: JSON.stringify({ target_user_id: targetUserId }),
+                    });
+                    showToast('已与 ' + targetName + ' 建立对话');
+                    closeContactSearch();
+                    consultantLoadContacts();
+                    // 使用新的切换函数
+                    switchToContactChat(data.conversation.id, targetName);
+                } catch (e) {
+                    showToast('创建对话失败: ' + e.message);
+                }
+            };
+
+            // ============================
+            //  Open Contact Chat (已改用switchToContactChat)
+            // ============================
+            window.consultantOpenChat = function (conversationId, contactName) {
+                // 直接使用新的切换函数
+                switchToContactChat(conversationId, contactName);
+            };
+
+            // ============================
+            //  Toast
+            // ============================
+            function showToast(message) {
+                var existing = document.querySelector('.contact-toast');
+                if (existing) existing.remove();
+
+                var toast = document.createElement('div');
+                toast.className = 'contact-toast';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(function () {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.3s ease';
+                    setTimeout(function () { toast.remove(); }, 300);
+                }, 2500);
+            }
+
+            // ============================
+            //  Init Contacts
+            // ============================
+            function initContacts() {
+                if (typeof consultantLoadContacts === 'function') {
+                    consultantLoadContacts();
+                }
+                // 每30秒刷新联系人列表
+                setInterval(consultantLoadContacts, 30000);
+            }
+
+            // 延迟初始化联系人，确保主页面完全加载后再加载联系人模块
+            // 解决因认证依赖未就绪导致的闪退问题
+            var _contactInitTimer = setTimeout(function initContactsDelayed() {
+                try {
+                    if (typeof consultantLoadContacts === 'function') {
+                        consultantLoadContacts();
+                    }
+                    // 每30秒刷新联系人列表
+                    setInterval(consultantLoadContacts, 30000);
+                } catch (e) {
+                    console.warn('[Contacts] 初始化延迟加载失败，3秒后重试:', e.message);
+                    setTimeout(function () {
+                        try {
+                            if (typeof consultantLoadContacts === 'function') {
+                                consultantLoadContacts();
+                            }
+                            setInterval(consultantLoadContacts, 30000);
+                        } catch (e2) {
+                            console.error('[Contacts] 初始化最终失败:', e2.message);
+                        }
+                    }, 3000);
+                }
+            }, 800);
+
+            if (document.readyState === 'complete') {
+                // 覆盖上面的定时器，延迟到更安全的时机
+                clearTimeout(_contactInitTimer);
+                setTimeout(initContacts, 800);
+            } else {
+                window.addEventListener('load', function () {
+                    clearTimeout(_contactInitTimer);
+                    setTimeout(initContacts, 800);
+                });
+            }
+
+            // 暴露 showToast 到 window，以便 HTML 内联 onclick 处理器可以调用
+            // （IIFE 内的函数默认在 window 上不可见）
+            window.showToast = showToast;
+            window.loadContactMessages = loadContactMessages;
+            window.startContactPolling = startContactPolling;
+            window.appendNewMessage = appendNewMessage;
+            window.updateContactLastMessage = updateContactLastMessage;
+
+        })();
+    </script>
+
+    <!-- P0 核心功能模块(企业端) -->
+    <link rel="stylesheet" href="/static/p0-styles.css" />
+    <script src="/static/p0-modules.js"></script>
+    <script>
+        window.ROLE = 'consultant';
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.P0Modules && window.P0Modules.PhoneBindingDialog) {
+                setTimeout(() => {
+                    window.P0Modules.PhoneBindingDialog.autoCheck();
+                }, 2000);
+            }
+        });
     </script>
 </body>
 </html>

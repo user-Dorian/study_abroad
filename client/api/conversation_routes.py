@@ -112,10 +112,20 @@ async def ensure_empty_conversation(
 
 @router.get("/api/conversations")
 async def list_conversations(current_user: dict = Depends(get_current_user)):
-    """获取所有会话列表"""
+    """获取所有会话列表
+
+    【修复历史问题】chat/AI 对话分离：
+    - 旧实现不按 dialogue_type 过滤，导致 contact_chat 联系人对话混入 AI 对话列表。
+    - 新实现仅返回 dialogue_type='ai_chat' 的对话（兼容历史 NULL 数据），
+      contact_chat 类型由 /api/contact-chat/list 端点独立提供。
+    """
     try:
         user_id = current_user.get("user_id") if current_user else None
-        convs = get_conversation_manager().list_conversations(user_id=user_id)
+        # AI 对话列表：仅返回 ai_chat（兼容 NULL），排除 contact_chat
+        convs = get_conversation_manager().list_conversations(
+            user_id=user_id,
+            dialogue_type="ai_chat",
+        )
         return convs
     except Exception as e:
         logger.error(f"获取会话列表失败: {e}")

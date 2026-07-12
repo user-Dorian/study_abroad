@@ -293,6 +293,13 @@ async def login(request: LoginRequest):
             data={"user_id": user["id"], "username": user["username"]}
         )
 
+        # 标记用户在线
+        try:
+            from common.utils.online_status import mark_online
+            await mark_online(str(user["id"]))
+        except Exception as e:
+            logger.warning(f"标记在线状态失败: {e}")
+
         logger.info(f"用户登录成功: username={request.username}")
         return AuthResponse(
             access_token=access_token,
