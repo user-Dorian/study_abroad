@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作台 - 企业留学通</title>
+    <style id="theme-vars">
+:root {
+  --doubao-background: var(--background, #ffffff);
+  --doubao-foreground: var(--foreground, #0f172a);
+  --doubao-card: var(--card, var(--background));
+  --doubao-card-foreground: var(--card-foreground, var(--foreground));
+  --doubao-popover: var(--popover, var(--card));
+  --doubao-popover-foreground: var(--popover-foreground, var(--card-foreground, var(--foreground)));
+  --doubao-primary: var(--primary, #111827);
+  --doubao-primary-foreground: var(--primary-foreground, #ffffff);
+  --doubao-secondary: var(--secondary, var(--muted, var(--card)));
+  --doubao-secondary-foreground: var(--secondary-foreground, var(--foreground));
+  --doubao-muted: var(--muted, var(--card));
+  --doubao-muted-foreground: var(--muted-foreground, var(--foreground));
+  --doubao-accent: var(--accent, var(--secondary, var(--muted, var(--card))));
+  --doubao-accent-foreground: var(--accent-foreground, var(--foreground));
+  --doubao-destructive: var(--destructive, #ef4444);
+  --doubao-destructive-foreground: var(--destructive-foreground, #ffffff);
+  --doubao-border: var(--border, currentColor);
+  --doubao-input: var(--input, var(--border));
+  --doubao-ring: var(--ring, var(--primary));
+  --doubao-chart-1: var(--chart-1, var(--primary));
+  --doubao-chart-2: var(--chart-2, var(--secondary, var(--primary)));
+  --doubao-chart-3: var(--chart-3, var(--accent, var(--primary)));
+  --doubao-chart-4: var(--chart-4, var(--muted-foreground, var(--foreground)));
+  --doubao-chart-5: var(--chart-5, var(--foreground));
+  --doubao-sidebar: var(--sidebar, var(--background));
+  --doubao-sidebar-foreground: var(--sidebar-foreground, var(--foreground));
+  --doubao-sidebar-primary: var(--sidebar-primary, var(--primary));
+  --doubao-sidebar-primary-foreground: var(--sidebar-primary-foreground, var(--primary-foreground));
+  --doubao-sidebar-accent: var(--sidebar-accent, var(--accent, var(--muted, var(--card))));
+  --doubao-sidebar-accent-foreground: var(--sidebar-accent-foreground, var(--accent-foreground, var(--foreground)));
+
+  --background: #ffffff;
+  --foreground: #0e1115;
+  --card: #ffffff;
+  --card-foreground: #0e1115;
+  --popover: #f9f9fa;
+  --popover-foreground: #0e1115;
+  --primary: #0065fd;
+  --primary-foreground: #ffffff;
+  --secondary: #eff1f4;
+  --secondary-foreground: #333942;
+  --muted: #eff1f4;
+  --muted-foreground: #7f8d9f;
+  --accent: #e5e9ff;
+  --accent-foreground: #00266b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e7eaef;
+  --input: #e7eaef;
+  --ring: #557fff;
+  --chart-1: #557fff;
+  --chart-2: #0065fd;
+  --chart-3: #0057da;
+  --chart-4: #0043ad;
+  --chart-5: #002e7d;
+  --sidebar: #eff1f4;
+  --sidebar-foreground: #0e1115;
+  --sidebar-primary: #0065fd;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #d4daff;
+  --sidebar-accent-foreground: #00266b;
+  --sidebar-border: #e7eaef;
+  --sidebar-ring: #0065fd;
+  --font-sans: Stack Sans Text, ui-sans-serif, sans-serif, system-ui;
+  --font-serif: Source Serif 4, serif;
+  --font-mono: JetBrains Mono, monospace;
+  --radius: 1.2rem;
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 0px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0;
+  --shadow-color: #0e1115;
+  --shadow-2xs: 0 1px 0px 0px rgb(14 17 21 / 0);
+  --shadow-xs: 0 1px 0px 0px rgb(14 17 21 / 0);
+  --shadow-sm: 0 1px 0px 0px rgb(14 17 21 / 0), 0 1px 2px -1px rgb(14 17 21 / 0);
+  --shadow: 0 1px 0px 0px rgb(14 17 21 / 0), 0 1px 2px -1px rgb(14 17 21 / 0);
+  --shadow-md: 0 1px 0px 0px rgb(14 17 21 / 0), 0 2px 4px -1px rgb(14 17 21 / 0);
+  --shadow-lg: 0 1px 0px 0px rgb(14 17 21 / 0), 0 4px 6px -1px rgb(14 17 21 / 0);
+  --shadow-xl: 0 1px 0px 0px rgb(14 17 21 / 0), 0 8px 10px -1px rgb(14 17 21 / 0);
+  --shadow-2xl: 0 1px 0px 0px rgb(14 17 21 / 0);
+  --tracking-normal: 0em;
+  --spacing: 0.24rem;
+}
+
+.dark {
+  --background: #0e1115;
+  --foreground: #eff1f4;
+  --card: #0e1115;
+  --card-foreground: #eff1f4;
+  --popover: #22252a;
+  --popover-foreground: #e5e5e5;
+  --primary: #0065fd;
+  --primary-foreground: #ffffff;
+  --secondary: #22252a;
+  --secondary-foreground: #e5e5e5;
+  --muted: #161a20;
+  --muted-foreground: #afbbcb;
+  --accent: #00266b;
+  --accent-foreground: #bfdbfe;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #333942;
+  --input: #333942;
+  --ring: #00266b;
+  --chart-1: #60a5fa;
+  --chart-2: #3b82f6;
+  --chart-3: #2563eb;
+  --chart-4: #1d4ed8;
+  --chart-5: #1e40af;
+  --sidebar: #171717;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #0065fd;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #00266b;
+  --sidebar-accent-foreground: #bfdbfe;
+  --sidebar-border: #404040;
+  --sidebar-ring: #00266b;
+  --font-sans: Stack Sans Text, ui-sans-serif, sans-serif, system-ui;
+  --font-serif: Source Serif 4, serif;
+  --font-mono: JetBrains Mono, monospace;
+  --radius: 1.2rem;
+  --shadow-color: #000000;
+  --shadow-2xs: 0 1px 0px 0px rgb(0 0 0 / 0);
+  --shadow-xs: 0 1px 0px 0px rgb(0 0 0 / 0);
+  --shadow-sm: 0 1px 0px 0px rgb(0 0 0 / 0), 0 1px 2px -1px rgb(0 0 0 / 0);
+  --shadow: 0 1px 0px 0px rgb(0 0 0 / 0), 0 1px 2px -1px rgb(0 0 0 / 0);
+  --shadow-md: 0 1px 0px 0px rgb(0 0 0 / 0), 0 2px 4px -1px rgb(0 0 0 / 0);
+  --shadow-lg: 0 1px 0px 0px rgb(0 0 0 / 0), 0 4px 6px -1px rgb(0 0 0 / 0);
+  --shadow-xl: 0 1px 0px 0px rgb(0 0 0 / 0), 0 8px 10px -1px rgb(0 0 0 / 0);
+  --shadow-2xl: 0 1px 0px 0px rgb(0 0 0 / 0);
+}
+    </style>
+    <style id="component-vars">
+*{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:720px}
+  .card{display:flex;gap:13px;padding:16px;text-align:left;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer;transition:border-color .16s,background .16s,transform .16s}
+  .card:hover{border-color:color-mix(in srgb,var(--primary) 40%,var(--border));background:color-mix(in srgb,var(--accent) 22%,var(--card));transform:translateY(-2px)}
+  .ic{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:13px;font-size:20px;color:var(--primary-foreground)}
+  .body{flex:1;min-width:0}
+  .title{margin:2px 0 5px;font-size:15px;font-weight:600}
+  .desc{margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--muted-foreground);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted-foreground)}
+  .count{display:inline-flex;align-items:center;gap:4px}
+  .dot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.6}
+  .icon{width:13px;height:13px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+*{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:20px;max-width:680px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .icon{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 16px;border:1px solid transparent;border-radius:999px;font:500 13px/1 var(--font-sans);cursor:pointer;transition:background-color .16s,border-color .16s,color .16s,transform .12s}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .primary{background:var(--primary);color:var(--primary-foreground)}
+  .primary:hover{background:color-mix(in srgb,var(--primary) 90%,var(--foreground))}
+  .ghost{background:var(--muted);color:var(--foreground)}
+  .ghost:hover{background:color-mix(in srgb,var(--muted) 82%,var(--foreground) 14%)}
+  .outline{background:var(--background);color:var(--foreground);border-color:var(--border)}
+  .outline:hover{background:var(--muted)}
+  .destructive{background:var(--destructive);color:var(--destructive-foreground)}
+  .destructive:hover{background:color-mix(in srgb,var(--destructive) 90%,var(--foreground))}
+  .sm{height:32px;padding:0 13px;font-size:12px}
+  .lg{height:44px;padding:0 20px;font-size:14px}
+  .icon-only{width:38px;height:38px;padding:0}
+  .divider{border:0;border-top:1px solid var(--border);margin:4px 0}
+
+*{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .wrap{max-width:720px;display:flex;flex-direction:column;gap:14px}
+  .composer{border:1px solid var(--border);border-radius:22px;background:var(--card);padding:14px 16px 10px;transition:border-color .16s,box-shadow .16s}
+  .composer:focus-within{border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+  textarea{width:100%;border:0;outline:0;background:transparent;resize:none;color:inherit;font:15px/1.5 var(--font-sans);min-height:24px;max-height:160px}
+  textarea::placeholder{color:var(--muted-foreground)}
+  .tools{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .composer-chip{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;background:transparent;color:color-mix(in srgb,var(--foreground) 78%,var(--muted-foreground));padding:7px 11px;font:13px var(--font-sans);cursor:pointer;transition:background .14s,color .14s}
+  .composer-chip:hover{background:var(--muted);color:var(--foreground)}
+  .composer-chip.round{width:34px;height:34px;padding:0;justify-content:center;border:1px solid var(--border)}
+  .spacer{flex:1}
+  .send{width:36px;height:36px;border:0;border-radius:999px;background:var(--primary);color:var(--primary-foreground);display:grid;place-items:center;cursor:pointer;transition:background .15s}
+  .send:hover{background:color-mix(in srgb,var(--primary) 90%,var(--foreground))}
+  .voice{width:36px;height:36px;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--muted-foreground);display:grid;place-items:center;cursor:pointer}
+  .voice:hover{background:var(--muted);color:var(--foreground)}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .icon{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+*{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .panel{max-width:760px;border:1px solid var(--border);border-radius:14px;background:var(--card);overflow:hidden}
+  .head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .head h2{margin:0;font-size:15px;font-weight:600}
+  .head .sub{font-size:12px;color:var(--muted-foreground)}
+  .spacer{flex:1}
+  .btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border:1px solid var(--border);border-radius:999px;background:var(--background);color:var(--foreground);font:500 12px var(--font-sans);cursor:pointer}
+  .btn:hover{background:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font:600 11px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground);padding:11px 16px;border-bottom:1px solid var(--border)}
+  td{padding:13px 16px;border-bottom:1px solid color-mix(in srgb,var(--border) 60%,transparent);font-size:13px}
+  tr:last-child td{border-bottom:0}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+  tr.selected{background:color-mix(in srgb,var(--accent) 26%,transparent)}
+  .name{display:flex;align-items:center;gap:10px;font-weight:500}
+  .ic{width:28px;height:28px;flex:none;border-radius:8px;display:grid;place-items:center;font-size:14px;color:var(--primary-foreground)}
+  .status-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font:500 12px var(--font-sans)}
+  .status-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .ok{background:color-mix(in srgb,var(--chart-2) 18%,transparent);color:var(--chart-2)}
+  .run{background:color-mix(in srgb,var(--chart-1) 16%,transparent);color:var(--chart-1)}
+  .wait{background:color-mix(in srgb,var(--muted-foreground) 16%,transparent);color:var(--muted-foreground)}
+  .metric{font-variant-numeric:tabular-nums;font-weight:600}
+  .trend-up{color:var(--chart-2);font-size:12px}
+  .trend-down{color:var(--destructive);font-size:12px}
+  .muted{color:var(--muted-foreground)}
+  .act{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--muted-foreground);cursor:pointer}
+  .act:hover{background:var(--muted);color:var(--foreground)}
+  .cb{width:16px;height:16px;accent-color:var(--primary)}
+  .icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+*{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .stack{display:flex;flex-direction:column;gap:20px;max-width:520px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .label{font:600 11px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+  .search{display:flex;align-items:center;gap:9px;height:40px;padding:0 12px;border:1px solid transparent;border-radius:10px;background:var(--muted);color:var(--foreground);transition:background .16s,border-color .16s,box-shadow .16s}
+  .search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}
+  .search input::placeholder{color:var(--muted-foreground)}
+  .search:focus-within{background:var(--card);border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+  .filled{background:var(--card);border-color:var(--border)}
+  .disabled{opacity:.5}
+  .disabled input{-webkit-text-fill-color:currentColor}
+  .error{border-color:var(--destructive);background:var(--card)}
+  .error:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--destructive) 18%,transparent)}
+  .helper{font-size:12px;color:var(--muted-foreground);padding-left:2px}
+  .helper.err{color:var(--destructive)}
+  .kbd{display:inline-flex;align-items:center;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--muted-foreground) 14%,transparent);color:var(--muted-foreground);font:600 11px/1 var(--font-sans)}
+  .clear{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:0;border-radius:50%;background:color-mix(in srgb,var(--muted-foreground) 16%,transparent);color:var(--foreground);cursor:pointer;font-size:13px;line-height:1}
+  .clear:hover{background:color-mix(in srgb,var(--muted-foreground) 28%,transparent)}
+  .icon{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted-foreground)}
+  .divider{border:0;border-top:1px solid var(--border);margin:4px 0}
+
+*{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.4}
+  .rail{width:248px;background:var(--sidebar);border:1px solid var(--sidebar-border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .search-wrap{padding:14px 14px 8px}
+  .search{display:flex;align-items:center;gap:9px;height:38px;padding:0 12px;border-radius:10px;background:color-mix(in srgb,var(--background) 70%,var(--sidebar));border:1px solid transparent}
+  .search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:13px var(--font-sans)}
+  .search input::placeholder{color:var(--muted-foreground)}
+  .kbd{padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--muted-foreground) 14%,transparent);color:var(--muted-foreground);font:600 11px/1 var(--font-sans)}
+  .nav{padding:4px 10px 8px;display:flex;flex-direction:column;gap:2px}
+  .item{display:flex;align-items:center;gap:11px;width:100%;padding:9px 11px;border:0;border-radius:10px;background:transparent;color:var(--sidebar-foreground);font:14px var(--font-sans);text-align:left;cursor:pointer;transition:background .14s,color .14s}
+  .item:hover{background:color-mix(in srgb,var(--background) 64%,var(--sidebar))}
+  .item.active{background:var(--background);color:var(--foreground);font-weight:600}
+  .item .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .icon{color:color-mix(in srgb,var(--foreground) 72%,var(--muted-foreground))}
+  .item.active .icon{color:var(--primary)}
+  .sc{color:var(--muted-foreground);font-size:12px}
+  .section{padding:14px 12px 6px;font-size:12px;color:var(--muted-foreground)}
+  .hist{display:flex;align-items:center;gap:10px;width:100%;padding:8px 11px;border:0;border-radius:10px;background:transparent;color:color-mix(in srgb,var(--foreground) 82%,var(--muted-foreground));font:13px var(--font-sans);text-align:left;cursor:pointer}
+  .hist:hover{background:color-mix(in srgb,var(--background) 64%,var(--sidebar));color:var(--foreground)}
+  .av{width:18px;height:18px;flex:none;border-radius:6px;display:grid;place-items:center;font-size:10px;color:var(--primary-foreground)}
+  .hist .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .footer{margin-top:auto;border-top:1px solid var(--sidebar-border);padding:10px 12px;display:flex;align-items:center;gap:10px}
+  .uav{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;font:600 13px/1 var(--font-sans);color:var(--primary-foreground);background:linear-gradient(135deg,var(--chart-1),var(--chart-4))}
+  .uname{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .icon{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+    <!-- 关键资源预加载 -->
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.min.js" crossorigin>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" as="script" crossorigin>
+    <!-- CDN资源（使用压缩版本） -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--doubao-background);
+    --color-foreground: var(--doubao-foreground);
+    --color-card: var(--doubao-card);
+    --color-card-foreground: var(--doubao-card-foreground);
+    --color-popover: var(--doubao-popover);
+    --color-popover-foreground: var(--doubao-popover-foreground);
+    --color-primary: var(--doubao-primary);
+    --color-primary-foreground: var(--doubao-primary-foreground);
+    --color-secondary: var(--doubao-secondary);
+    --color-secondary-foreground: var(--doubao-secondary-foreground);
+    --color-muted: var(--doubao-muted);
+    --color-muted-foreground: var(--doubao-muted-foreground);
+    --color-accent: var(--doubao-accent);
+    --color-accent-foreground: var(--doubao-accent-foreground);
+    --color-destructive: var(--doubao-destructive);
+    --color-destructive-foreground: var(--doubao-destructive-foreground);
+    --color-border: var(--doubao-border);
+    --color-input: var(--doubao-input);
+    --color-ring: var(--doubao-ring);
+    --color-chart-1: var(--doubao-chart-1);
+    --color-chart-2: var(--doubao-chart-2);
+    --color-chart-3: var(--doubao-chart-3);
+    --color-chart-4: var(--doubao-chart-4);
+    --color-chart-5: var(--doubao-chart-5);
+    --color-sidebar: var(--doubao-sidebar);
+    --color-sidebar-foreground: var(--doubao-sidebar-foreground);
+    --color-sidebar-primary: var(--doubao-sidebar-primary);
+    --color-sidebar-primary-foreground: var(--doubao-sidebar-primary-foreground);
+    --color-sidebar-accent: var(--doubao-sidebar-accent);
+    --color-sidebar-accent-foreground: var(--doubao-sidebar-accent-foreground);
+  }
+  @layer base {
+    body { background: var(--doubao-background); color: var(--doubao-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+
+    <!-- 资源预加载优化 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main>
+
+    <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-5A8 8 0 1 1 21 12Z"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+      <symbol id="i-bar-chart" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+      <symbol id="i-dots" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+      <symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+      <symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+      <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+      <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></symbol>
+    </svg>
+
+    <header class="flex items-center h-14 px-4 border-b shrink-0"
+            style="background: linear-gradient(135deg, var(--chart-5), var(--chart-4)); border-color: var(--border);">
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="text-base font-bold text-white whitespace-nowrap">企业留学通</span>
+        <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white text-xs font-medium whitespace-nowrap"
+              style="background: color-mix(in srgb, var(--primary-foreground) 25%, transparent);">企业版</span>
+      </div>
+
+      <nav class="flex items-center gap-2 mx-auto">
+        <button class="inline-flex items-center justify-center gap-1.5 h-8 px-4 rounded-full text-sm font-medium whitespace-nowrap"
+                style="background: var(--primary); color: var(--primary-foreground);">
+          <svg class="icon-sm" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-chat"/></svg>
+          AI对话
+        </button>
+        <button id="nav-clients" class="inline-flex items-center justify-center gap-1.5 h-8 px-4 rounded-full text-sm font-medium text-white whitespace-nowrap"
+                style="background: color-mix(in srgb, var(--primary-foreground) 20%, transparent); cursor:pointer;">
+          <svg class="icon-sm" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-users"/></svg>
+          客户管理
+          <span id="pending-badge" class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold text-white whitespace-nowrap"
+                style="background: var(--destructive); font-size: 11px; display:none;">0</span>
+        </button>
+        <button id="nav-dispatch" class="inline-flex items-center justify-center gap-1.5 h-8 px-4 rounded-full text-sm font-medium text-white whitespace-nowrap"
+                style="background: color-mix(in srgb, var(--primary-foreground) 20%, transparent); cursor:pointer;">
+          <svg class="icon-sm" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-clipboard"/></svg>
+          派单信息
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-white whitespace-nowrap"
+              style="background: color-mix(in srgb, var(--primary-foreground) 18%, transparent);">
+          <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-bar-chart"/></svg>
+          <span id="quota-display">12/50 本月已用</span>
+        </span>
+        <button class="relative inline-flex items-center justify-center w-8 h-8 rounded-full text-white shrink-0"
+                style="background: color-mix(in srgb, var(--primary-foreground) 30%, transparent);"
+                aria-label="通知">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-bell"/></svg>
+          <span id="notif-badge" class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-white"
+                style="background: var(--destructive); font-size: 9px; border: 2px solid var(--chart-5); display:none;">0</span>
+        </button>
+        <button id="nav-profile" class="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full shrink-0" style="cursor:pointer; background: color-mix(in srgb, var(--primary-foreground) 15%, transparent);">
+          <span id="nav-avatar" class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold text-white shrink-0"
+                style="background: var(--primary);">李</span>
+          <span id="nav-name" class="text-sm font-medium text-white whitespace-nowrap">李老师</span>
+          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--primary-foreground);"><use href="#i-chevron-down"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex" style="height: calc(100vh - 56px);">
+
+      <aside class="shrink-0 flex flex-col overflow-hidden" style="width: 280px; background: var(--sidebar); border-right: 1px solid var(--sidebar-border);">
+
+        <div class="p-3 pb-2">
+          <button id="new-chat-btn" class="flex items-center justify-center gap-2 w-full h-9 rounded-lg text-sm font-medium whitespace-nowrap"
+                  style="background: var(--primary); color: var(--primary-foreground);">
+            <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-plus"/></svg>
+            新对话
+          </button>
+        </div>
+
+        <div class="px-3 pb-2">
+          <div class="flex items-center gap-2 h-9 px-3 rounded-lg" style="background: color-mix(in srgb, var(--background) 70%, var(--sidebar)); border: 1px solid transparent;">
+            <svg style="width:15px;height:15px;stroke:var(--muted-foreground);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;"><use href="#i-search"/></svg>
+            <input id="conv-search" class="flex-1 min-w-0 border-0 outline-none bg-transparent text-sm" style="color: var(--foreground); font-family: var(--font-sans);" placeholder="搜索对话..." aria-label="搜索对话">
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto px-2" id="conversation-list">
+        </div>
+
+        <div class="border-t" style="border-color: var(--sidebar-border);">
+          <div class="flex items-center gap-2 px-4 py-2.5">
+            <svg style="width:14px;height:14px;stroke:var(--muted-foreground);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;"><use href="#i-calendar"/></svg>
+            <span class="text-xs font-semibold whitespace-nowrap" style="color: var(--muted-foreground);">今日待办</span>
+            <span id="todo-count" class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold whitespace-nowrap"
+                  style="background: var(--primary); color: var(--primary-foreground); font-size: 10px;">0</span>
+          </div>
+          <div class="flex flex-col gap-1 px-3 pb-3" id="todo-list">
+          </div>
+        </div>
+      </aside>
+
+      <div class="flex-1 min-w-0 flex flex-col" style="background: var(--background);">
+
+        <div class="flex items-center gap-3 px-5 py-3 shrink-0" style="border-bottom: 1px solid var(--border);">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="chat-title" class="text-sm font-semibold truncate" style="color: var(--foreground);">选择对话开始咨询</span>
+              <span id="chat-status" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                    style="background: color-mix(in srgb, var(--chart-2) 16%, transparent); color: var(--chart-2); display:none;">
+                <span class="w-1.5 h-1.5 rounded-full" style="background: var(--chart-2);"></span>
+                进行中
+              </span>
+            </div>
+          </div>
+          <div id="mini-client-card" class="flex items-center gap-3 px-3 py-1.5 rounded-lg shrink-0" style="background: var(--muted); border: 1px solid var(--border); display:none;">
+            <span id="client-avatar" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0" style="background: var(--primary); color: var(--primary-foreground);">张</span>
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2">
+                <span id="client-name" class="text-xs font-semibold whitespace-nowrap" style="color: var(--foreground);"></span>
+                <span id="client-country" class="flex items-center gap-1 text-xs whitespace-nowrap" style="color: var(--muted-foreground);"></span>
+              </div>
+              <span id="client-progress" class="text-xs whitespace-nowrap" style="color: var(--muted-foreground);"></span>
+            </div>
+            <div class="w-12 h-1.5 rounded-full overflow-hidden shrink-0" style="background: var(--border);">
+              <div id="progress-bar" class="h-full rounded-full" style="width: 0%; background: var(--primary);"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="pipeline-bar" class="flex items-center gap-2 px-5 py-2 shrink-0" style="background: var(--muted); border-bottom: 1px solid var(--border); display:none;">
+          <svg style="width:13px;height:13px;stroke:var(--chart-1);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;"><use href="#i-sparkles"/></svg>
+          <div class="flex items-center gap-1.5 text-xs" style="color: var(--muted-foreground);">
+            <span class="whitespace-nowrap">知识库检索中</span>
+            <span class="w-1 h-1 rounded-full" style="background: var(--muted-foreground);"></span>
+            <span class="whitespace-nowrap">企业文档库</span>
+            <span class="w-1 h-1 rounded-full" style="background: var(--muted-foreground);"></span>
+            <span id="pipeline-lib" class="whitespace-nowrap"></span>
+            <span class="w-1 h-1 rounded-full" style="background: var(--muted-foreground);"></span>
+            <span id="pipeline-count" class="whitespace-nowrap" style="color: var(--chart-2);"></span>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto px-5 py-4" id="message-area">
+          <div class="flex items-center justify-center h-full" style="color: var(--muted-foreground);">
+            <p class="text-sm">请从左侧选择一个对话</p>
+          </div>
+        </div>
+
+        <div class="px-5 pb-4 pt-2 shrink-0" style="background: var(--background);">
+          <div class="flex flex-col rounded-2xl" style="border: 1px solid var(--border); background: var(--card); padding: 14px 16px 10px;">
+            <textarea id="msg-input" rows="1" class="w-full border-0 outline-none bg-transparent resize-none text-sm" style="color: var(--foreground); font-family: var(--font-sans); min-height: 24px; max-height: 160px;" placeholder="输入消息，@知识库 快速检索..."></textarea>
+            <div class="flex items-center gap-2 mt-2.5">
+              <button class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0" style="border: 1px solid var(--border); background: transparent;" aria-label="附件">
+                <svg style="width:15px;height:15px;stroke:var(--muted-foreground);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-paperclip"/></svg>
+              </button>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap cursor-pointer" style="border:0; background:transparent; color: color-mix(in srgb, var(--foreground) 78%, var(--muted-foreground));">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-sparkles"/></svg>
+                检索知识库
+              </button>
+              <button id="composer-binding-request" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap cursor-pointer" style="border:0; background:transparent; color: color-mix(in srgb, var(--foreground) 78%, var(--muted-foreground));">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-link"/></svg>
+                发送绑定请求
+              </button>
+              <span class="flex-1"></span>
+              <button id="send-btn" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style="background: var(--primary); color: var(--primary-foreground); border:0;" aria-label="发送">
+                <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-send"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="shrink-0" style="border-top: 2px solid var(--border);">
+          <button id="toggle-dashboard" class="flex items-center justify-center gap-2 w-full py-2 text-xs font-medium cursor-pointer" style="background: var(--muted); color: var(--muted-foreground); border: 0; border-bottom: 1px solid var(--border);">
+            <svg id="dashboard-chevron" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-chevron-up"/></svg>
+            工作台数据
+          </button>
+
+          <div id="dashboard-panel" class="grid grid-cols-4 gap-3 p-4" style="background: var(--background);">
+            <div class="rounded-xl p-4" style="background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--chart-1);">
+              <div class="text-xs truncate" style="color: var(--muted-foreground);">本月咨询</div>
+              <div class="flex items-end gap-2 mt-1.5">
+                <span id="stat-monthly-consult" class="text-2xl font-bold whitespace-nowrap" style="color: var(--foreground); font-variant-numeric: tabular-nums;">-</span>
+                <span class="text-xs whitespace-nowrap" style="color: var(--muted-foreground);">次</span>
+              </div>
+              <div class="flex items-center gap-1 mt-1">
+                <svg style="width:12px;height:12px;stroke:var(--chart-2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-arrow-up"/></svg>
+                <span id="stat-consult-trend" class="text-xs font-medium whitespace-nowrap" style="color: var(--chart-2);">-</span>
+              </div>
+            </div>
+            <div class="rounded-xl p-4" style="background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--chart-2);">
+              <div class="text-xs truncate" style="color: var(--muted-foreground);">绑定客户</div>
+              <div class="flex items-end gap-2 mt-1.5">
+                <span id="stat-bound-clients" class="text-2xl font-bold whitespace-nowrap" style="color: var(--foreground); font-variant-numeric: tabular-nums;">-</span>
+                <span class="text-xs whitespace-nowrap" style="color: var(--muted-foreground);">人</span>
+              </div>
+              <div class="flex items-center gap-1 mt-1">
+                <svg style="width:12px;height:12px;stroke:var(--chart-2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-arrow-up"/></svg>
+                <span id="stat-client-trend" class="text-xs font-medium whitespace-nowrap" style="color: var(--chart-2);">-</span>
+              </div>
+            </div>
+            <div class="rounded-xl p-4" style="background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--chart-3);">
+              <div class="text-xs truncate" style="color: var(--muted-foreground);">好评率</div>
+              <div class="flex items-end gap-2 mt-1.5">
+                <span id="stat-satisfaction" class="text-2xl font-bold whitespace-nowrap" style="color: var(--foreground); font-variant-numeric: tabular-nums;">-</span>
+                <span class="text-xs whitespace-nowrap" style="color: var(--muted-foreground);">%</span>
+              </div>
+              <div class="flex items-center gap-1 mt-1">
+                <svg style="width:12px;height:12px;stroke:var(--chart-2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><use href="#i-arrow-up"/></svg>
+                <span id="stat-sat-trend" class="text-xs font-medium whitespace-nowrap" style="color: var(--chart-2);">-</span>
+              </div>
+            </div>
+            <div class="rounded-xl p-4" style="background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--chart-4);">
+              <div class="text-xs truncate" style="color: var(--muted-foreground);">配额余额</div>
+              <div class="flex items-end gap-2 mt-1.5">
+                <span id="stat-quota-used" class="text-2xl font-bold whitespace-nowrap" style="color: var(--foreground); font-variant-numeric: tabular-nums;">-</span>
+                <span id="stat-quota-total" class="text-xs whitespace-nowrap" style="color: var(--muted-foreground);">/ 50 次</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full mt-2 overflow-hidden" style="background: var(--border);">
+                <div id="quota-bar" class="h-full rounded-full" style="width: 0%; background: var(--chart-4);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    </main>
+    <script>
+(function(){
+  var token = localStorage.getItem('rag-auth-token');
+  if (!token) { window.location.replace('/login.html'); return; }
+
+  const API_BASE = window.location.origin;
+
+  async function apiRequest(url, options) {
+    options = options || {};
+    var headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    try {
+      var resp = await fetch(API_BASE + url, { ...options, headers: headers });
+      if (resp.status === 401) {
+        localStorage.removeItem('rag-auth-token');
+        window.location.replace('/login.html');
+        return null;
+      }
+      if (!resp.ok) {
+        var data = await resp.json().catch(function(){ return {}; });
+        throw new Error((data && data.detail) || '请求失败');
+      }
+      return resp.json();
+    } catch (e) {
+      if (e.message && e.message.includes('Failed to fetch')) {
+        console.warn('API不可达:', url);
+        return null;
+      }
+      throw e;
+    }
+  }
+
+  // ===== 自定义确认弹窗 =====
+  function showConfirm(msg) {
+    return new Promise(function(resolve) {
+      var existing = document.getElementById('custom-confirm-overlay');
+      if (existing) existing.remove();
+
+      var overlay = document.createElement('div');
+      overlay.id = 'custom-confirm-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center';
+
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--card);border-radius:12px;padding:24px;min-width:300px;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);text-align:center';
+
+      box.innerHTML = '<div style="margin-bottom:12px"><i data-lucide="alert-triangle" style="width:28px;height:28px;color:var(--destructive)"></i></div>' +
+        '<p class="text-sm" style="color:var(--foreground);margin-bottom:20px;line-height:1.5">' + msg + '</p>' +
+        '<div class="flex gap-2 justify-center">' +
+        '<button id="confirm-cancel-btn" class="px-4 py-2 rounded-lg text-sm cursor-pointer" style="background:var(--muted);color:var(--foreground);border:none;min-width:80px">取消</button>' +
+        '<button id="confirm-ok-btn" class="px-4 py-2 rounded-lg text-sm cursor-pointer" style="background:var(--destructive);color:#fff;border:none;min-width:80px">确认删除</button>' +
+        '</div>';
+
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      try { lucide.createIcons(); } catch(e) {}
+
+      document.getElementById('confirm-cancel-btn').addEventListener('click', function() {
+        overlay.remove();
+        resolve(false);
+      });
+      document.getElementById('confirm-ok-btn').addEventListener('click', function() {
+        overlay.remove();
+        resolve(true);
+      });
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          overlay.remove();
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  var currentConversationId = null;
+  var conversations = [];
+
+  function loadProfile() {
+    apiRequest('/api/profile/me').then(function(data){
+      if (!data) return;
+      var profile = data.profile || data.data || data;
+      if (profile.name) {
+        document.getElementById('nav-name').textContent = profile.name;
+        document.getElementById('nav-avatar').textContent = profile.name.charAt(0);
+      }
+    }).catch(function(err){
+      console.warn('加载个人资料失败:', err);
+    });
+  }
+
+  document.getElementById('nav-clients').addEventListener('click', function(){
+    window.location.href = 'clients.html';
+  });
+  document.getElementById('nav-dispatch').addEventListener('click', function(){
+    window.location.href = 'dispatch.html';
+  });
+  document.getElementById('nav-profile').addEventListener('click', function(){
+    window.location.href = 'profile.html';
+  });
+  document.getElementById('new-chat-btn').addEventListener('click', function(){
+    currentConversationId = null;
+    document.getElementById('chat-title').textContent = '新对话';
+    document.getElementById('chat-status').style.display = 'none';
+    document.getElementById('mini-client-card').style.display = 'none';
+    document.getElementById('pipeline-bar').style.display = 'none';
+    document.getElementById('message-area').innerHTML = '<div class="flex items-center justify-center h-full" style="color: var(--muted-foreground);"><p class="text-sm">开始新的对话，输入消息即可发送</p></div>';
+    document.getElementById('msg-input').value = '';
+    document.getElementById('msg-input').focus();
+  });
+
+  function loadConversations() {
+    apiRequest('/api/consultant/contact-conversations').then(function(data){
+      if (!data) return;
+      var list = data.conversations || data.data || data || [];
+      conversations = list;
+      renderConversationList(list);
+    }).catch(function(err){
+      console.warn('加载对话列表失败:', err);
+    });
+  }
+
+  function renderConversationList(list) {
+    var container = document.getElementById('conversation-list');
+    if (!list || list.length === 0) {
+      container.innerHTML = '<div class="p-4 text-xs text-center" style="color:var(--muted-foreground);">暂无对话</div>';
+      return;
+    }
+    var html = '<div class="flex flex-col gap-0.5">';
+    list.forEach(function(conv){
+      var name = conv.client_name || conv.name || '未知';
+      var initial = name.charAt(0);
+      var lastMsg = conv.last_message || conv.latest_message || '';
+      var time = conv.updated_at || conv.last_time || '';
+      var isActive = currentConversationId === conv.id;
+      var bgStyle = isActive ? 'background: var(--background); border-left: 3px solid var(--primary);' : '';
+      var colorStyle = isActive ? '' : 'style="color: var(--sidebar-foreground);"';
+      html += '<div class="conv-item flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-left cursor-pointer" data-id="' + conv.id + '" style="' + bgStyle + ' transition: background 0.1s; position:relative;" ' + colorStyle + '>' +
+        '<span class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0" style="background: var(--primary); color: var(--primary-foreground);">' + initial + '</span>' +
+        '<div class="flex-1 min-w-0">' +
+        '<span class="text-sm font-medium truncate block">' + name + '</span>' +
+        '<p class="text-xs truncate mt-0.5" style="color: var(--muted-foreground);">' + (lastMsg || '') + '</p>' +
+        '</div>' +
+        '<span class="text-xs shrink-0 whitespace-nowrap" style="color: var(--muted-foreground);">' + time + '</span>' +
+        '<span class="conv-del-btn" style="display:none;position:absolute;right:4px;top:4px;width:18px;height:18px;border-radius:4px;text-align:center;line-height:18px;font-size:10px;cursor:pointer;background:var(--destructive);color:#fff;font-weight:bold">&times;</span>' +
+        '</div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('.conv-item').forEach(function(el){
+      el.addEventListener('mouseenter', function(){ var db = el.querySelector('.conv-del-btn'); if(db) db.style.display = 'block'; });
+      el.addEventListener('mouseleave', function(){ var db = el.querySelector('.conv-del-btn'); if(db) db.style.display = 'none'; });
+      el.addEventListener('click', function(e){
+        if (e.target.classList.contains('conv-del-btn')) return;
+        var id = el.getAttribute('data-id');
+        selectConversation(id);
+      });
+      var delBtn = el.querySelector('.conv-del-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', async function(e) {
+          e.stopPropagation();
+          var id = el.getAttribute('data-id');
+          var ok = await showConfirm('确定删除此对话？');
+          if (!ok) return;
+          apiRequest('/api/conversations/' + id, { method: 'DELETE' }).then(function() {
+            if (currentConversationId === id) {
+              currentConversationId = null;
+              document.getElementById('chat-title').textContent = '新对话';
+              document.getElementById('message-area').innerHTML = '<div class="flex items-center justify-center h-full" style="color: var(--muted-foreground);"><p class="text-sm">开始新的对话</p></div>';
+            }
+            loadConversations();
+          }).catch(function(err){ console.warn('删除对话失败:', err); });
+        });
+      }
+    });
+  }
+
+  function selectConversation(id) {
+    currentConversationId = id;
+    var conv = conversations.find(function(c){ return c.id == id; });
+    if (conv) {
+      var name = conv.client_name || conv.name || '未知';
+      document.getElementById('chat-title').textContent = name;
+      document.getElementById('chat-status').style.display = '';
+    }
+    renderConversationList(conversations);
+    loadMessages(id);
+  }
+
+  function loadMessages(convId) {
+    var area = document.getElementById('message-area');
+    area.innerHTML = '<div class="flex items-center justify-center h-full" style="color: var(--muted-foreground);"><p class="text-sm">加载中...</p></div>';
+
+    apiRequest('/api/consultant/conversations/' + convId + '/messages').then(function(data){
+      var msgs = data.messages || data.data || data || [];
+      renderMessages(msgs);
+    }).catch(function(err){
+      area.innerHTML = '<div class="flex items-center justify-center h-full" style="color: var(--muted-foreground);"><p class="text-sm">加载失败</p></div>';
+      console.warn('加载消息失败:', err);
+    });
+  }
+
+  function renderMessages(msgs) {
+    var area = document.getElementById('message-area');
+    if (!msgs || msgs.length === 0) {
+      area.innerHTML = '<div class="flex items-center justify-center h-full" style="color: var(--muted-foreground);"><p class="text-sm">暂无消息</p></div>';
+      return;
+    }
+    var html = '<div class="flex flex-col gap-4" style="max-width: 780px;">';
+    msgs.forEach(function(msg){
+      var isStudent = msg.role === 'user' || msg.role === 'student';
+      var isAI = msg.role === 'assistant' || msg.role === 'ai';
+      var isConsultant = msg.role === 'consultant' || msg.role === 'staff';
+      var senderName = msg.sender_name || (isStudent ? '学生' : (isAI ? 'AI助手' : '我'));
+      var content = msg.content || '';
+      var time = msg.created_at || msg.timestamp || '';
+
+      if (isStudent) {
+        html += '<div class="flex items-start gap-3">' +
+          '<span class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0" style="background: var(--muted); color: var(--foreground);">' + senderName.charAt(0) + '</span>' +
+          '<div class="flex-1 min-w-0">' +
+          '<div class="flex items-center gap-2 mb-1"><span class="text-xs font-semibold" style="color: var(--foreground);">' + senderName + '</span><span class="text-xs" style="color: var(--muted-foreground);">' + time + '</span></div>' +
+          '<div class="inline-flex px-4 py-2.5 rounded-2xl rounded-tl text-sm" style="background: var(--muted); color: var(--foreground); max-width: 600px;">' + content + '</div>' +
+          '</div></div>';
+      } else if (isAI) {
+        html += '<div class="flex items-start gap-3">' +
+          '<span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background: var(--primary); color: var(--primary-foreground);">' +
+          '<svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;"><use href="#i-bot"/></svg></span>' +
+          '<div class="flex-1 min-w-0">' +
+          '<div class="flex items-center gap-2 mb-1"><span class="text-xs font-semibold" style="color: var(--foreground);">AI助手</span><span class="text-xs" style="color: var(--muted-foreground);">' + time + '</span></div>' +
+          '<div class="px-4 py-3 rounded-2xl rounded-tl text-sm" style="background: var(--card); border: 1px solid var(--border); color: var(--foreground); max-width: 600px;">' + content + '</div>' +
+          '</div></div>';
+      } else {
+        html += '<div class="flex items-start gap-3">' +
+          '<span class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0" style="background: var(--chart-1); color: var(--primary-foreground);">' + senderName.charAt(0) + '</span>' +
+          '<div class="flex-1 min-w-0">' +
+          '<div class="flex items-center gap-2 mb-1"><span class="text-xs font-semibold" style="color: var(--foreground);">' + senderName + '</span><span class="text-xs" style="color: var(--muted-foreground);">' + time + '</span></div>' +
+          '<div class="inline-flex px-4 py-2.5 rounded-2xl rounded-tl text-sm" style="background: color-mix(in srgb, var(--primary) 12%, var(--accent)); color: var(--foreground); max-width: 600px;">' + content + '</div>' +
+          '</div></div>';
+      }
+    });
+    html += '</div>';
+    area.innerHTML = html;
+    area.scrollTop = area.scrollHeight;
+  }
+
+  document.getElementById('send-btn').addEventListener('click', function(){
+    sendCurrentMessage();
+  });
+  document.getElementById('msg-input').addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendCurrentMessage();
+    }
+  });
+
+  function sendCurrentMessage() {
+    var input = document.getElementById('msg-input');
+    var content = input.value.trim();
+    if (!content || !currentConversationId) return;
+    input.value = '';
+    apiRequest('/api/consultant/conversations/' + currentConversationId + '/messages', {
+      method: 'POST',
+      body: JSON.stringify({ content: content, role: 'consultant' })
+    }).then(function(data){
+      loadMessages(currentConversationId);
+      loadConversations();
+    }).catch(function(err){
+      console.warn('发送消息失败:', err);
+    });
+  }
+
+  function loadWorkspaceStats() {
+    apiRequest('/api/consultant/workspace/stats').then(function(data){
+      if (!data) return;
+      var stats = data.stats || data.data || data;
+      if (stats.monthly_consult !== undefined) {
+        document.getElementById('stat-monthly-consult').textContent = stats.monthly_consult;
+        document.getElementById('stat-consult-trend').textContent = stats.consult_trend || '-';
+      }
+      if (stats.bound_clients !== undefined) {
+        document.getElementById('stat-bound-clients').textContent = stats.bound_clients;
+        document.getElementById('stat-client-trend').textContent = stats.client_trend || '-';
+      }
+      if (stats.satisfaction !== undefined) {
+        document.getElementById('stat-satisfaction').textContent = stats.satisfaction;
+        document.getElementById('stat-sat-trend').textContent = stats.sat_trend || '-';
+      }
+      if (stats.quota_used !== undefined) {
+        document.getElementById('stat-quota-used').textContent = stats.quota_used;
+        var total = stats.quota_total || 50;
+        document.getElementById('stat-quota-total').textContent = '/ ' + total + ' 次';
+        document.getElementById('quota-bar').style.width = Math.min(100, (stats.quota_used / total) * 100) + '%';
+        document.getElementById('quota-display').textContent = stats.quota_used + '/' + total + ' 本月已用';
+      }
+    }).catch(function(err){
+      console.warn('加载工作台统计失败:', err);
+    });
+  }
+
+  function loadTodos() {
+    apiRequest('/api/consultant/todos').then(function(data){
+      if (!data) return;
+      var todos = data.todos || data.data || data || [];
+      var container = document.getElementById('todo-list');
+      var countEl = document.getElementById('todo-count');
+      countEl.textContent = todos.length;
+      if (!todos || todos.length === 0) {
+        container.innerHTML = '<div class="px-2.5 py-2 text-xs" style="color: var(--muted-foreground);">暂无待办</div>';
+        return;
+      }
+      var html = '';
+      todos.forEach(function(todo){
+        var color = todo.priority === 'high' ? 'var(--destructive)' : 'var(--chart-1)';
+        html += '<div class="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer" style="background: color-mix(in srgb, var(--primary) 8%, transparent);">' +
+          '<span class="w-1.5 h-1.5 rounded-full shrink-0" style="background: ' + color + ';"></span>' +
+          '<span class="text-xs truncate" style="color: var(--foreground);">' + (todo.title || todo.content || '') + '</span></div>';
+      });
+      container.innerHTML = html;
+    }).catch(function(err){
+      console.warn('加载待办失败:', err);
+    });
+  }
+
+  document.getElementById('composer-binding-request').addEventListener('click', function(){
+    var userId = prompt('请输入要绑定的用户ID：');
+    if (!userId) return;
+    var message = prompt('请输入绑定请求附言（可选）：') || '';
+    apiRequest('/api/consultant/binding-requests', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, message: message })
+    }).then(function(){
+      alert('绑定请求已发送');
+    }).catch(function(err){
+      alert('发送绑定请求失败: ' + err.message);
+    });
+  });
+
+  var dashboardVisible = true;
+  document.getElementById('toggle-dashboard').addEventListener('click', function(){
+    dashboardVisible = !dashboardVisible;
+    var panel = document.getElementById('dashboard-panel');
+    var chevron = document.getElementById('dashboard-chevron');
+    panel.style.display = dashboardVisible ? '' : 'none';
+    chevron.style.transform = dashboardVisible ? '' : 'rotate(180deg)';
+  });
+
+  loadConversations();
+  loadWorkspaceStats();
+  loadTodos();
+  loadProfile();
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+})();
+    </script>
+
+    <script>
+        // 注册Service Worker（修正路径）
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // 尝试多个可能的路径
+                const swPaths = ['/frontend/sw.js', '/sw.js', './sw.js'];
+                let registered = false;
+
+                swPaths.forEach(function(path) {
+                    if (!registered) {
+                        navigator.serviceWorker.register(path)
+                            .then(function(registration) {
+                                registered = true;
+                                console.log('[SW] 注册成功，路径:', path, '作用域:', registration.scope);
+                            })
+                            .catch(function(error) {
+                                console.log('[SW] 路径注册失败:', path, error.message);
+                            });
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

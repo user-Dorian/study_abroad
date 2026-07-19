@@ -12,12 +12,21 @@ __pycache__/
 models/**
 !models/.gitkeep
 
-# ====== BM25索引（可通过 scripts 下脚本重建）======
-bm25_index/**
-!bm25_index/.gitkeep
+# ====== BM25缓存（位于共享数据目录）======
+backend/common/data/bm25_cache/
+
+# ====== 大型知识库文件（PDF > 5MB）======
+backend/common/data/study_abroad/schools/hongkong/*.pdf
+backend/common/data/study_abroad/schools/australia/*.pdf
+backend/common/data/study_abroad/schools/global/*.pdf
+backend/common/data/study_abroad/schools/germany/*.pdf
+backend/common/data/study_abroad/schools/singapore/*.pdf
+backend/common/data/study_abroad/schools/usa/*.pdf
+backend/common/data/study_abroad/scholarships/*.pdf
 
 # ====== 日志 ======
 logs/
+backend/common/logs/
 *.log
 
 # ====== IDE / 系统文件 ======
@@ -30,18 +39,29 @@ logs/
 Thumbs.db
 
 # ====== 测试脚本 ======
+tests/
 test_*.py
 scripts/test_*.py
+judge_test/
 
 # ====== 私有开发脚本（根目录下 _ 前缀）======
 /_*.py
 
 # ====== 文档 ======
 docs/
+*.md
+!README.md
+
+# ====== .trae 临时输出 ======
+.trae/documents/
+.trae/judge-output/
+.trae/rules/*.md
+.trae/skills/web-search-qwen/
 
 # ====== 临时文件 ======
 @*
 *_交互文档.md
+simple_server.py
 
 # ====== 测试输出 ======
 test_sse.txt

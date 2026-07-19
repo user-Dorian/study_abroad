@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留学通 - 登录</title>
+    <style>
+        :root {
+            --bg: #f7f7f8;
+            --card: #ffffff;
+            --fg: #1a1a1a;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --error: #ef4444;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 12px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--fg);
+        }
+        .logo p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--fg);
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--fg);
+            background: var(--card);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 11px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-login:hover { background: var(--primary-hover); }
+        .btn-login:disabled { background: #9ca3af; cursor: not-allowed; }
+        .error-msg {
+            color: var(--error);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            min-height: 18px;
+        }
+        .hint {
+            margin-top: 20px;
+            padding: 10px 14px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #0369a1;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <div class="logo-icon">留</div>
+            <h1>留学通</h1>
+            <p>智能留学咨询平台</p>
+        </div>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入密码" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-login" id="btn-login">登录</button>
+            <div class="error-msg" id="error-msg"></div>
+        </form>
+        <div class="hint">
+            首次登录会自动创建账号。输入任意用户名和密码即可体验。
+        </div>
+    </div>
+    <script>
+        // 如果已有token，直接跳转
+        var existingToken = localStorage.getItem('rag-auth-token');
+        if (existingToken) {
+            window.location.replace('/');
+        }
+
+        var form = document.getElementById('login-form');
+        var errorMsg = document.getElementById('error-msg');
+        var btnLogin = document.getElementById('btn-login');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var username = document.getElementById('username').value.trim();
+            var password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                errorMsg.textContent = '请输入用户名和密码';
+                return;
+            }
+
+            btnLogin.disabled = true;
+            btnLogin.textContent = '登录中...';
+            errorMsg.textContent = '';
+
+            try {
+                var resp = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+
+                var data = await resp.json();
+
+                if (resp.ok && data.access_token) {
+                    localStorage.setItem('rag-auth-token', data.access_token);
+                    // 存储用户信息
+                    localStorage.setItem('rag-auth-user', JSON.stringify({
+                        user_id: data.user_id,
+                        username: data.username,
+                        role: data.role,
+                        display_name: data.display_name || data.username
+                    }));
+                    window.location.replace('/');
+                } else {
+                    errorMsg.textContent = data.detail || '登录失败，请重试';
+                    btnLogin.disabled = false;
+                    btnLogin.textContent = '登录';
+                }
+            } catch(err) {
+                errorMsg.textContent = '网络错误，请检查服务是否启动';
+                btnLogin.disabled = false;
+                btnLogin.textContent = '登录';
+            }
+        });
+    </script>
+</body>
+</html>
